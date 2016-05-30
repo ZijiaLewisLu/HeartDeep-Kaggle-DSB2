@@ -1,0 +1,43 @@
+Part 1  Refers to the portion of the database used for the online challenge on the day of the workshop.
+
+Part 2 Refers to the portion of the database used for the validation (testing) challenge that formed the basis of the results for submitted papers.
+
+Part 3 Refers to the portion of the database used for the initial training phase of the challenge.
+
+
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+The DICOMS are named like:
+
+IM-YYYY-XXXX.dcm
+YYYY indicates the series
+XXXX indicates the image number index (for instance, 1-20 means first slice, phase 1-20, 21-40 means second slice, phase 1-20, ...) of the series.
+
+The manual (reference) contours are matched by the XXXX number.
+
+
+1. heart failure with infarction (SC-HF-I)
+2. heart failure with no infarction (SC-HF-NI) 
+3. LV hypertrophy (SC-HYP) 
+4. healthy (SC-N)
+
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+The Contours are named in this format:
+
+IM-0001-[FOUR DIGIT NUMBER]-[i/o/p1/p2]contour-[manual/auto].txt
+
+The IM-0001 part of the filename is due to the naming convention that Osirix (a free DICOM viewer program) gives to DICOM files that it exports. All DICOM files and contours should have this prefix. 
+
+The four digit number signifies the position of the image within the series. For example, IM-0001-0001 would be the first phase of the slice closest to the base. Taking into account that there are twenty phases per slice, you can then determine that an image with the number 0122 would represent the second phase of the sixth slice from the bottom.
+
+The i/o/p1/p2 component of the filename signifies the area that the contour represents. I contours are inner contours, or contours that segment the endocardium. O contours are outer contours, contours that segment the epicardium. P1 and P2 contours represent contours for the two largest papillary muscles. Note that these contours are optional but will be included in the LV Mass calculation in accordance with the manual contour procedure.
+
+No outer contours are provided for systole since in clinical routine these are not required. Outer contours from diastole are required for LV mass calculation.
+
+The manual/auto component signifies the process through which the contours were obtained. All of the expert contours included in this workspace will be denoted manual as they were drawn by humans, but all of the contours that were algorithmically generated should be labelled auto (for automatic).
+
+File Format
+Each contour file should be a text file in the following format:
+X1 Y1
+X2 Y2
+...
+With each (Xi,Yi) pair representing the coordinates of the i pixel in the contour in pixel units. The conversion factor between pixel and millimeter units can be found by reading the PixelSpacing parameter of a DICOM file. (0, 0) is taken to be the top left hand corner, so (256, 280) would represent a distance of 256 pixels from the left hand side of the DICOM image and 280 pixels from the top of the DICOM image. The contours should form a polygon with no gaps in the perimeter. That is, the maximum distance between any two coordinate pairs should be one pixel and the first and last pairs of coordinates should be less than one pixel apart. 
