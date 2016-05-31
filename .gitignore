@@ -1,2 +1,9 @@
 #ignore DATA Folder
 DATA/
+.ipynb_checkpoints/
+train_images_lmdb/
+train_labels_lmdb/
+val_images_lmdb/
+val_labels_lmdb/
+model_logs/
+dataset

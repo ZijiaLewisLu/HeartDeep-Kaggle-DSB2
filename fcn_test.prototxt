@@ -10,7 +10,7 @@ layer {
     mean_value: 77
   }
   data_param {
-    source: "train_images_lmdb/"
+    source: "val_images_lmdb/"
     batch_size: 1
     backend: LMDB
   }
@@ -20,7 +20,7 @@ layer {
   type: "Data"
   top: "label"
   data_param {
-    source: "train_labels_lmdb/"
+    source: "val_labels_lmdb/"
     batch_size: 1
     backend: LMDB
   }
@@ -269,4 +269,11 @@ layer {
   loss_param {
     normalize: true
   }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "score"
+  bottom: "label"
+  top: "accuracy"
 }

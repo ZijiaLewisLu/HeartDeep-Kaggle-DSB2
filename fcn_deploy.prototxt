@@ -1,30 +1,11 @@
 name: "FCN"
 force_backward: true
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  transform_param {
-    mirror: false
-    crop_size: 0
-    mean_value: 77
-  }
-  data_param {
-    source: "train_images_lmdb/"
-    batch_size: 1
-    backend: LMDB
-  }
-}
-layer {
-  name: "label"
-  type: "Data"
-  top: "label"
-  data_param {
-    source: "train_labels_lmdb/"
-    batch_size: 1
-    backend: LMDB
-  }
-}
+input: "data"
+# We will manipulate the input_dim fields below in Python during testing. They appear here only for syntactic reasons.
+input_dim: 1
+input_dim: 1
+input_dim: 1
+input_dim: 1
 layer {
   name: "conv1"
   type: "Convolution"
@@ -261,12 +242,9 @@ layer {
   top: "score"
 }
 layer {
-  name: "loss"
-  type: "SoftmaxWithLoss"
+  name: "prob"
+  type: "Softmax"
   bottom: "score"
-  bottom: "label"
-  top: "loss"
-  loss_param {
-    normalize: true
-  }
+  top: "prob"
 }
+
