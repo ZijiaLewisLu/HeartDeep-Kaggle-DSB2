@@ -1,5 +1,6 @@
 #ignore DATA Folder
 DATA/
+*/
 .ipynb_checkpoints/
 train_images_lmdb/
 train_labels_lmdb/
