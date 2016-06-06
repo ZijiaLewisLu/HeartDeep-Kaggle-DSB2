@@ -8,4 +8,7 @@ val_images_lmdb/
 val_labels_lmdb/
 model_logs/
 dataset
+*~
+*pyc
 !kaggle_tutorial
+!kaggle_ndsb2
