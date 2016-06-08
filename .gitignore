@@ -10,6 +10,7 @@ model_logs/
 dataset
 *~
 *pyc
+*swp
 !kaggle_tutorial
 !kaggle-ndsb2
 !dsbAnalysis

@@ -235,6 +235,23 @@ layer {
   type: "Deconvolution"
   bottom: "score_classes"
   top: "upscore"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    bias_term: true
+    kernel_size: 31
+    pad: 8
+    stride: 16
+    weight_filler { type: "bilinear" }
+    bias_filler { type: "constant" value: 0.1 }
+  }
 }
 layer {
   name: "score"
