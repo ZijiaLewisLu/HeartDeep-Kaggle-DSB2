@@ -2,7 +2,9 @@
 *pyc
 *swp
 *pk
-dataset
+*_mac
+
+
 !kaggle_tutorial
 !kaggle-ndsb2
 !dsbAnalysis
@@ -14,3 +16,5 @@ SunnyOrigin/
 Top3/
 caffe_FCN/
 .ipynb_checkpoints/
+kaggle_tutorial/iou_mac
+dataset
