@@ -56,14 +56,23 @@ def load_pk(fname, rate = 0.1):
 
 def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
 
-    train = mx.io.NDArrayIter(img, ll, 
+    train = mx.io.NDArrayIter(
+            img,
+            label=ll, 
             batch_size = batch_size, shuffle=True, last_batch_handle = last_batch_handle)
 
     rate = vimg.shape[0]/img.shape[0]
-    val   = mx.io.NDArrayIter(vimg, ll, 
+    val   = mx.io.NDArrayIter(
+            vimg,
+            label=vll, 
             batch_size = batch_size*rate, shuffle = False, last_batch_handle = last_batch_handle)
 
     return train, val
+
+
+def get_():
+    data = load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
+    return create_iter(*data, batch_size = 10)
 
     
 

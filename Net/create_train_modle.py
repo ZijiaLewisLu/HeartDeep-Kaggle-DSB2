@@ -143,7 +143,7 @@ def create_net(pm):
     conv11 = mx.sym.Convolution(name = 'conv11', data = relu10, kernel = pm['c11']['fsize'], 
             num_filter = pm['c11']['fnum'], stride = pm['c11']['stride'], pad = pm['c11']['pad'] )
 #    softmax = mx.sym.Softmax(name = 'softmax', data = conv11)
-    output = mx.sym.Activation(data = conv11, act_type = 'sigmoid')
+    output = mx.sym.Activation(data = conv11, act_type = 'sigmoid', name = 'softmax_label')
 
     return output
 
@@ -198,11 +198,12 @@ if __name__ is '__main__':
     train_iter, val_iter = load.create_iter(img,ll,vimg,vll, batch_size=10 )
 
     print type(train_iter)
+    print type(val_iter)
 
+    #train_iter.label[0][0] = val_iter.label[0][0] = 'output' 
     
     print 'start to train...'
     model.fit(
-            model,
             train_iter,
             eval_data = val_iter,
             eval_metric = 'acc', 
