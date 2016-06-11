@@ -8,7 +8,9 @@
 !kaggle_tutorial
 !kaggle-ndsb2
 !dsbAnalysis
+!kaggle_tutorial/analysis_rslt
 
+kaggle_tutorial/*/
 DATA/
 SunnyOrigin/
 Top3/
