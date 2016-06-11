@@ -1,5 +1,6 @@
 import ipt
 import mxnet as mx
+import numpy as np
 
 class IOU(mx.operator.CustomOp):
 
@@ -36,6 +37,15 @@ class IOUProp(mx.operator.CustomOpProp):
         return IOU()
 
 
+def make_iou(data, label):
+    return mx.sym.Custom(data =data, label = label, name = 'iou', op_type='iou')
+
+def get_iou():
+    d = mx.sym.Variable(name = 'data')
+    l = mx.sym.Variable(name = 'label')
+
+    return mx.sym.Custom(data =d, label = l, name = 'iou', op_type='iou')
+
 if __name__ == '__main__':
 
     d = mx.sym.Variable(name = 'data')
@@ -43,4 +53,10 @@ if __name__ == '__main__':
 
     iou = mx.sym.Custom(data =d, label = l, name = 'iou', op_type='iou')
 
+    img = np.random.randn(1,1,256,256)
+    label = np.random.randn(1,1,256,256)
+
+    model = mx.model.FeedForward(iou)
+
+    model.fit(img, y = label)
     
