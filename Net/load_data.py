@@ -56,11 +56,11 @@ def load_pk(fname, rate = 0.1):
 
 def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
 
-    train = mx.io.MNISTIter(img, ll, 
+    train = mx.io.NDArrayIter(img, ll, 
             batch_size = batch_size, shuffle=True, last_batch_handle = last_batch_handle)
 
     rate = vimg.shape[0]/img.shape[0]
-    val   = mx.io.MNISTIter(vimg, ll, 
+    val   = mx.io.NDArrayIter(vimg, ll, 
             batch_size = batch_size*rate, shuffle = False, last_batch_handle = last_batch_handle)
 
     return train, val
