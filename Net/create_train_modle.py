@@ -1,0 +1,210 @@
+import ipt
+import mxnet as mx
+import minpy as mp
+import minpy.numpy as np
+import mxnet as mx
+import load_data as load
+
+PK = '/home/zijia/HeartDeepLearning/Net/o1.pk'
+Params= {
+            'c1':{
+                'fsize' : (7,7),
+                'fnum'  : 8,
+                'pad'   : (0,0),
+                'stride': (1,1),
+            },
+            'c2':{
+                'fsize' : (3,3),
+                'fnum'  : 16,
+                'pad'   : (0,0),
+                'stride': (1,1),
+            },
+            'c3':{
+                'fsize' : (3,3),
+                'fnum'  : 32,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c4':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c5':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c6':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (2,2),
+                'stride': (1,1)
+            },
+            'c7':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (2,2),
+                'stride': (1,1)
+            },
+            'c8':{
+                'fsize' : (7,7),
+                'fnum'  : 64,
+                'pad'   : (6,6),
+                'stride': (1,1)
+            },
+            'c9':{
+                'fsize' : (3,3),
+                'fnum'  : 16,
+                'pad'   : (2,2),
+                'stride': (1,1)
+            },
+            'c10':{
+                'fsize' : (7,7),
+                'fnum'  : 8,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c11':{
+                'fsize' : (7,7),
+                'fnum'  : 1,
+                'pad'   : (6,6),
+                'stride': (1,1)
+            }
+        }
+
+
+
+
+
+
+
+def create_net(pm):
+    ''' pm should be a dict of the params of each layers '''
+    data = mx.sym.Variable(name= 'data')  #name must be data, don't know why
+
+
+    conv1 = mx.sym.Convolution(name = 'conv1', data = data, kernel = pm['c1']['fsize'], 
+            num_filter = pm['c1']['fnum'], stride = pm['c1']['stride'], pad = pm['c1']['pad'] )
+    relu1 = mx.sym.Activation(data = conv1, act_type = 'relu')
+    conv2 = mx.sym.Convolution(name = 'conv2', data = relu1, kernel = pm['c2']['fsize'], 
+        num_filter = pm['c2']['fnum'], stride = pm['c2']['stride'], pad = pm['c2']['pad'] )
+    relu2 = mx.sym.Activation(data = conv2, act_type = 'relu')
+
+    pool1 = mx.sym.Pooling(data = relu2, pool_type = "max", kernel=(2,2), stride = (2,2))
+
+
+    conv3 = mx.sym.Convolution(name = 'conv3', data = pool1, kernel = pm['c3']['fsize'], 
+            num_filter = pm['c3']['fnum'], stride = pm['c3']['stride'], pad = pm['c3']['pad'] )
+    relu3 = mx.sym.Activation(data = conv3, act_type = 'relu')
+    pool2 = mx.sym.Pooling(data = relu3, pool_type = "max", kernel=(2,2), stride = (2,2))
+    
+
+    conv4 = mx.sym.Convolution(name = 'conv4', data = pool2, kernel = pm['c4']['fsize'], 
+            num_filter = pm['c4']['fnum'], stride = pm['c4']['stride'], pad = pm['c4']['pad'] )
+    relu4 = mx.sym.Activation(data = conv4, act_type = 'relu')
+    pool3 = mx.sym.Pooling(data = relu4, pool_type = "max", kernel=(2,2), stride = (2,2))
+
+
+    conv5 = mx.sym.Convolution(name = 'conv5', data = pool3, kernel = pm['c5']['fsize'], 
+            num_filter = pm['c5']['fnum'], stride = pm['c5']['stride'], pad = pm['c5']['pad'] )
+    relu5 = mx.sym.Activation(data = conv5, act_type = 'relu')
+    conv6 = mx.sym.Convolution(name = 'conv6', data = relu5, kernel = pm['c6']['fsize'], 
+        num_filter = pm['c6']['fnum'], stride = pm['c6']['stride'], pad = pm['c6']['pad'] )
+    relu6 = mx.sym.Activation(data = conv6, act_type = 'relu')
+
+
+    up1  = mx.sym.UpSampling(relu6, scale = 2, sample_type= 'bilinear', num_args = 1)
+
+    
+    conv7 = mx.sym.Convolution(name = 'conv7', data = up1, kernel = pm['c7']['fsize'], 
+        num_filter = pm['c7']['fnum'], stride = pm['c7']['stride'], pad = pm['c7']['pad'] )
+    relu7 = mx.sym.Activation(data = conv7, act_type = 'relu')
+
+    up2  = mx.sym.UpSampling(relu7, scale = 2, sample_type = 'bilinear', num_args = 1)
+    
+    conv8 = mx.sym.Convolution(name = 'conv8', data = up2, kernel = pm['c8']['fsize'], 
+        num_filter = pm['c8']['fnum'], stride = pm['c8']['stride'], pad = pm['c8']['pad'] )
+    relu8 = mx.sym.Activation(data = conv8, act_type = 'relu')
+
+    up3  = mx.sym.UpSampling(relu3, scale = 2, sample_type = 'bilinear', num_args = 1)
+
+
+    conv9 = mx.sym.Convolution(name = 'conv9', data = up3, kernel = pm['c9']['fsize'], 
+            num_filter = pm['c9']['fnum'], stride = pm['c9']['stride'], pad = pm['c9']['pad'] )
+    relu9 = mx.sym.Activation(data = conv9, act_type = 'relu')
+    conv10 = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = pm['c10']['fsize'], 
+        num_filter = pm['c10']['fnum'], stride = pm['c10']['stride'], pad = pm['c10']['pad'] )
+    relu10 = mx.sym.Activation(data = conv10, act_type = 'relu')
+
+
+    conv11 = mx.sym.Convolution(name = 'conv11', data = relu10, kernel = pm['c11']['fsize'], 
+            num_filter = pm['c11']['fnum'], stride = pm['c11']['stride'], pad = pm['c11']['pad'] )
+#    softmax = mx.sym.Softmax(name = 'softmax', data = conv11)
+    output = mx.sym.Activation(data = conv11, act_type = 'sigmoid')
+
+    return output
+
+
+def create_mx(net, opt='adam', init = mx.initializer.Xavier(rnd_type = 'gaussian')):
+    
+    return mx.model.FeedForward(
+                symbol = net,
+                ctx = mx.context.gpu(0),
+                num_epoch = 1000,
+                learning_rate = 3e-3,
+                optimizer = opt, 
+                initializer = init
+                )
+
+
+def create_opt(*args):
+    #TODO
+    return None
+
+
+def batch_call_back(params):
+    ''' params = (epoch, nbatch, eval_metric, locals) '''
+
+    epoch = params[0]
+    if epoch % 10 == 0:
+        print 'epoch %d, nbatch%d'%(params[0], params[1])
+        with open('/home/zijia/log.txt','a') as f:
+            f.write(params[2])
+
+
+def train(model,dataiter,call_back=None):
+    model.fit(
+            dataiter,
+            batch_end_callback = call_back
+            )
+
+
+def iou_eval(args):
+    #TODO
+    return None
+
+
+if __name__ is '__main__':
+
+    net = create_net(Params)
+    model = create_mx(net)
+
+    img,ll,vimg,vll = load.load_pk(PK)
+    #diter = mx.io.NDArrayIter(img, ll, batch_size = 50,last_batch_handle = 'pad')
+   
+    train_iter, val_iter = load.create_iter(img,ll,vimg,vll, batch_size=10 )
+
+    print type(train_iter)
+
+    
+    print 'start to train...'
+    model.fit(
+            model,
+            train_iter,
+            eval_data = val_iter,
+            eval_metric = 'acc', 
+            batch_end_callback = batch_call_back
+            )
