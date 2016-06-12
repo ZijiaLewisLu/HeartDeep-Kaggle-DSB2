@@ -54,7 +54,7 @@ conv8 = mx.sym.Convolution(name = 'conv8', data = up2, kernel = pm['c8']['fsize'
     num_filter = pm['c8']['fnum'], stride = pm['c8']['stride'], pad = pm['c8']['pad'] )
 relu8 = mx.sym.Activation(data = conv8, act_type = 'relu')
 
-up3  = mx.sym.UpSampling(relu3, scale = 2, sample_type = 'bilinear', num_args = 1)
+up3  = mx.sym.UpSampling(relu8, scale = 2, sample_type = 'bilinear', num_args = 1)
 
 
 conv9 = mx.sym.Convolution(name = 'conv9', data = up3, kernel = pm['c9']['fsize'], 
