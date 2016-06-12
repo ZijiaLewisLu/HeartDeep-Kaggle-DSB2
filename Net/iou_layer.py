@@ -13,10 +13,10 @@ class IOU(mx.operator.CustomOp):
         # do nothing
         
         # if self.First:
-        print 'in forward'
+        # print 'in forward'
             # self.First = False
         self.assign(out_data[0],req[0],in_data[0])
-        print 'out forward'
+        # print 'out forward'
         # assert False, 'here'
 
     def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
@@ -29,7 +29,7 @@ class IOU(mx.operator.CustomOp):
         # out = (ll/(pred+ll))**2
         out = nd.multiply(out,out)
         self.assign(in_grad[0],req[0],out)
-        print 'out backward'
+        # print 'out backward'
         
 
 @mx.operator.register("iou")
