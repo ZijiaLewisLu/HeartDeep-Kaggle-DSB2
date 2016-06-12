@@ -94,6 +94,25 @@ def small_iter():
 
     return mx.io.NDArrayIter(img, label = ll, batch_size = 1)
 
+def return_model():
+    train = small_iter()
+
+    upper = net_basic(params)
+    assert upper.infer_shape(data = (1,1,256,256))[1] == [(1L, 1L, 256L, 256L)], 'infer shape error'
+    
+    net = mx.sym.Custom(data = upper, name = 'softmax', op_type='iou')
+
+    model = mx.model.FeedForward(
+                symbol = net,
+                # ctx = mx.context.gpu(0),
+                num_epoch = 200,
+                learning_rate = 3e-3,
+                optimizer = 'adam',
+                initializer = mx.initializer.Xavier(rnd_type = 'gaussian'),
+                )
+
+    return model
+
 if __name__ == "__main__":
 
     train = small_iter()
@@ -105,7 +124,7 @@ if __name__ == "__main__":
 
     model = mx.model.FeedForward(
                 symbol = net,
-                ctx = mx.context.gpu(0),
+                # ctx = mx.context.gpu(0),
                 num_epoch = 200,
                 learning_rate = 3e-3,
                 optimizer = 'adam',
