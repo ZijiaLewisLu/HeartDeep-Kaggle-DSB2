@@ -1,9 +1,13 @@
 import ipt
 import minpy as minpy
 import mxnet as mx
-import minpy.numpy as np
+import numpy as np
 import create_train_modle as old
 import load_data as load
+from iou_layer import *
+import os
+os.environ["MXNET_ENGINE_TYPE"] = "NaiveEngine"
+
 
 params = old.Params
 
@@ -55,80 +59,70 @@ def net_basic(pm):
         num_filter = pm['c8']['fnum'], stride = pm['c8']['stride'], pad = pm['c8']['pad'] )
     relu8 = mx.sym.Activation(data = conv8, act_type = 'relu')
 
-    up3  = mx.sym.UpSampling(relu3, scale = 2, sample_type = 'bilinear', num_args = 1)
+    up3  = mx.sym.UpSampling(relu8, scale = 2, sample_type = 'bilinear', num_args = 1)
 
 
     conv9 = mx.sym.Convolution(name = 'conv9', data = up3, kernel = pm['c9']['fsize'], 
             num_filter = pm['c9']['fnum'], stride = pm['c9']['stride'], pad = pm['c9']['pad'] )
     relu9 = mx.sym.Activation(data = conv9, act_type = 'relu')
-    # conv10 = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = pm['c10']['fsize'], 
-    #     num_filter = pm['c10']['fnum'], stride = pm['c10']['stride'], pad = pm['c10']['pad'] )
-    # relu10 = mx.sym.Activation(data = conv10, act_type = 'relu')
+    conv10 = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = pm['c10']['fsize'], 
+        # num_filter = pm['c10']['fnum'], 
+        num_filter = 1,
+        stride = pm['c10']['stride'], pad = pm['c10']['pad'] )
+    sgmd = mx.sym.Activation(data = conv10, act_type = 'sigmoid')
 
 
     # conv11 = mx.sym.Convolution(name = 'conv11', data = relu10, kernel = pm['c11']['fsize'], 
     #         num_filter = pm['c11']['fnum'], stride = pm['c11']['stride'], pad = pm['c11']['pad'] )
 #    softmax = mx.sym.Softmax(name = 'softmax', data = conv11)
-    return relu9
-
-def pred_out():
-    rl = net_basic(params)
-
-    conv = mx.sym.Convolution(name = 'conv10', data = rl, kernel = (7,7), num_filter = 1,  
-            stride = (1,1), pad = (0,0) )
-    return out  = mx.sym.Activation(data = conv, act_type = 'sigmoid')
+    return sgmd
 
 
-class IOU(mx.operator.CustomOp):
+def callback(l):
+    print 'callback' , l[0]
 
-    def __init__():
-        super.(IOU,self).__init__(self)
 
-    def forward(self, is_train, req, in_data, out_data, aux):
-        pred = in_data[0]
-        ll   = in_data[1]
-        # ll = mx.sym.Variable(name = 'label')
-        out = 2* mx.sym.sum(pred*ll, axis = 0)/mx.sym.sum(pred + ll, axis = 0).
-        self.assign(out_data[0],req[0],out)
+def small_iter():
+    '''only ten img and one once'''
 
-    def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
-        pass
-        
+    # img, ll, vimg, vll = load.load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
+    # img = img[10:]
+    # ll  = ll [10:]
 
-@mx.operator.register("iou")
-class IOUProp(mx.operator.CustomOpProp):
-    def __init__():
-        super(IOUProp,self).__init__(need_top_grad=False)
+    img = np.random.randn(10,1,256,256)
+    ll  = np.random.randn(10,1,256,256)
 
-    def list_arguments(self):
-        return ['data','label']
-
-    def list_outputs(self):
-        return ['outputs']
-
-    def infer_shape(self, inshape):
-        ''' [data shape, label shape] ,[output shape], [aux ..?]'''
-        return [inshape[0],inshape[0]], [inshape[0][0]], []
-
-    def create_operator(self, ctx, shapes, dtypes):
-        return IOU()
-
+    return mx.io.NDArrayIter(img, label = ll, batch_size = 1)
 
 if __name__ == "__main__":
 
-    img, ll, vimg, vll = load.load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
+    train = small_iter()
 
-    # upper = net_basic(params)
-    net = mx.sym.SoftmaxOutput(data = upper, act_type = 'sigmoid', name = 'softmax_label')
+    upper = net_basic(params)
+    assert upper.infer_shape(data = (1,1,256,256))[1] == [(1L, 1L, 256L, 256L)], 'infer shape error'
+    
+    net = mx.sym.Custom(data = upper, name = 'softmax', op_type='iou')
 
     model = mx.model.FeedForward(
                 symbol = net,
                 ctx = mx.context.gpu(0),
-                num_epoch = 1000,
+                num_epoch = 200,
                 learning_rate = 3e-3,
-                optimizer = 'adam'
-                # initializer = init
+                optimizer = 'adam',
+                initializer = mx.initializer.Xavier(rnd_type = 'gaussian'),
                 )
+
+
+    # if not Done_test:
+    #     result = model.predict(train, num_batch = 5, return_data = True)
+
+    print '>>>>start to train \n\n'
+    model.fit(
+        train,
+        # eval_data = val,
+        # eval_metric = 'acc',
+        batch_end_callback = callback
+        )
 
 
 

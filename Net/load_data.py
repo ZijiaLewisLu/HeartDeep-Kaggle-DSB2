@@ -77,7 +77,7 @@ def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
 
 def get_():
     data = load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
-    return create_iter(*data, batch_size = 10)
+    return create_iter(*data, batch_size = 1)
 
     
 
