@@ -5,17 +5,21 @@ import load_data as load
 import create_train_modle as ctm
 
 def lnet():
-	return mx.sym.LogisticRegressionOutput(b.out, name = 'logist')
+	return mx.sym.LogisticRegressionOutput(b.out, name = 'softmax')
 
 def callback(l):
-	print l[0]
+	print 'callback' , l[0]
 
 def train_l():
+
 	train, val = load.get_()
 
 	net = lnet()
 
-	model = mx.model.FeedForward(net)
+	model = mx.model.FeedForward(
+		net,
+        num_epoch = 100
+		)
 
 	print 'here'
 
@@ -24,11 +28,24 @@ def train_l():
 		eval_data = val,
         eval_metric = 'acc', 
         # num_epoch = 1000,
-        batch_end_callback = callback
+        batch_end_callback = callback,
 		)
 
+def no_iter():
+	img, ll, vimg, vll = load.load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
+
+	model = mx.model.FeedForward(
+		lnet(),
+		numpy_batch_size = 1,
+		)
+
+	model.fit(img,ll,
+		batch_end_callback = callback,
+		num_epoch = 100
+		)
 
 def main():
+	# no_iter()
 	train_l()
 
 if __name__ == '__main__':

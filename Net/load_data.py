@@ -11,6 +11,10 @@ def _load_pk_file(fname, rate):
         img = pk.load(f)
         ll  = pk.load(f)
 
+    print '-mean'
+    img -= img.mean(axis = 0)
+    ll  -= ll.mean (axis = 0)
+
     img = img[:,None,:,:]
     ll  = ll[:,None,:,:]
 
@@ -51,7 +55,8 @@ def load_pk(fname, rate = 0.1):
         else:
             np.concatenate(ll_val,vll)
 
-    return img_train, ll_train, img_val, ll_val
+    # return img_train , ll_train, img_val, ll_val
+    return img_train + 1e-5, ll_train + 1e-5 , img_val + 1e-5, ll_val + 1e-5
 
 
 def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
