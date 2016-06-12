@@ -1,5 +1,5 @@
 import ipt
-import minpy as minpy
+# import minpy as minpy
 import mxnet as mx
 import minpy.numpy as np
 import create_train_modle as old
@@ -41,21 +41,32 @@ conv6 = mx.sym.Convolution(name = 'conv6', data = relu5, kernel = pm['c6']['fsiz
 relu6 = mx.sym.Activation(data = conv6, act_type = 'relu')
 
 
-up1  = mx.sym.UpSampling(relu6, scale = 2, sample_type= 'bilinear', num_args = 1)
-
+# up1  = mx.sym.UpSampling(relu6, scale = 2, sample_type= 'bilinear', num_args = 1)
+up1   = mx.sym.Deconvolution(
+        data = relu6, kernel = (4,4), stride = (2,2), pad = (1,1),
+        num_filter = 64, no_bias = True
+        )
 
 conv7 = mx.sym.Convolution(name = 'conv7', data = up1, kernel = pm['c7']['fsize'], 
     num_filter = pm['c7']['fnum'], stride = pm['c7']['stride'], pad = pm['c7']['pad'] )
 relu7 = mx.sym.Activation(data = conv7, act_type = 'relu')
 
-up2  = mx.sym.UpSampling(relu7, scale = 2, sample_type = 'bilinear', num_args = 1)
+# up2  = mx.sym.UpSampling(relu7, scale = 2, sample_type = 'bilinear', num_args = 1)
+up2   = mx.sym.Deconvolution(
+        data = relu7, kernel = (4,4), stride = (2,2), pad = (1,1),
+        num_filter = 64, no_bias = True
+        )
+
 
 conv8 = mx.sym.Convolution(name = 'conv8', data = up2, kernel = pm['c8']['fsize'], 
     num_filter = pm['c8']['fnum'], stride = pm['c8']['stride'], pad = pm['c8']['pad'] )
 relu8 = mx.sym.Activation(data = conv8, act_type = 'relu')
 
-up3  = mx.sym.UpSampling(relu8, scale = 2, sample_type = 'bilinear', num_args = 1)
-
+# up3  = mx.sym.UpSampling(relu8, scale = 2, sample_type = 'bilinear', num_args = 1)
+up3   = mx.sym.Deconvolution(
+        data = relu8, kernel = (4,4), stride = (2,2), pad = (1,1),
+        num_filter = 32, no_bias = True
+        )
 
 conv9 = mx.sym.Convolution(name = 'conv9', data = up3, kernel = pm['c9']['fsize'], 
         num_filter = pm['c9']['fnum'], stride = pm['c9']['stride'], pad = pm['c9']['pad'] )

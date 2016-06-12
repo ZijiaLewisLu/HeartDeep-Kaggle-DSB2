@@ -1,5 +1,5 @@
 import ipt
-import minpy as minpy
+#import minpy as minpy
 import mxnet as mx
 import numpy as np
 import create_train_modle as old
@@ -46,11 +46,18 @@ def net_basic(pm):
     relu6 = mx.sym.Activation(data = conv6, act_type = 'relu')
 
 
-    up1  = mx.sym.UpSampling(relu6, scale = 2, sample_type= 'bilinear', num_args = 1)
-
+    # up1  = mx.sym.UpSampling(relu6, scale = 2, sample_type= 'bilinear', num_args = 1)
+    # up1   = mx.sym.Convolution(
+    #     data = relu6, kernel = (4,4), stride = (2,2), pad = (1,1),
+    #     num_filter = 64, no_bias = True
+    #     )
     
-    conv7 = mx.sym.Convolution(name = 'conv7', data = up1, kernel = pm['c7']['fsize'], 
+    conv7 = mx.sym.Convolution(name = 'conv7', 
+        # data = up1, 
+        data = relu6,
+        kernel = pm['c7']['fsize'], 
         num_filter = pm['c7']['fnum'], stride = pm['c7']['stride'], pad = pm['c7']['pad'] )
+    
     relu7 = mx.sym.Activation(data = conv7, act_type = 'relu')
 
     up2  = mx.sym.UpSampling(relu7, scale = 2, sample_type = 'bilinear', num_args = 1)

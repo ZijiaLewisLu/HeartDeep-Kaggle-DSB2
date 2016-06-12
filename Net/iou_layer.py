@@ -1,18 +1,22 @@
 import ipt
 import mxnet as mx
 import numpy as np
+import mxnet.ndarray as nd
 
 class IOU(mx.operator.CustomOp):
 
-    # def __init__():
-    #     super(IOU,self).__init__(self)
+    # def __init__(self):
+        # super(IOU,self).__init__(self)
+        # self.First = True
 
     def forward(self, is_train, req, in_data, out_data, aux):
         # do nothing
-        print 'in'
+        
+        # if self.First:
+        # print 'in forward'
+            # self.First = False
         self.assign(out_data[0],req[0],in_data[0])
-        print 'one forward end'
-        # print 'end forward'
+        # print 'out forward'
         # assert False, 'here'
 
     def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
@@ -20,8 +24,12 @@ class IOU(mx.operator.CustomOp):
         pred = in_data[0]
         ll   = in_data[1]
 
-        out = (ll/(pred+ll))**2
+        out = nd.add(pred, ll)
+        out = nd.divide(ll, out)
+        # out = (ll/(pred+ll))**2
+        out = nd.multiply(out,out)
         self.assign(in_grad[0],req[0],out)
+        # print 'out backward'
         
 
 @mx.operator.register("iou")

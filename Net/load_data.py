@@ -11,19 +11,21 @@ def _load_pk_file(fname, rate):
         img = pk.load(f)
         ll  = pk.load(f)
 
-    print '-mean'
-    img -= img.mean(axis = 0)
-    ll  -= ll.mean (axis = 0)
+    # print '-mean'
+    # img -= img.mean(axis = 0)
+    # ll  -= ll.mean (axis = 0)
 
     img = img[:,None,:,:]
     ll  = ll[:,None,:,:]
 
     N = img.shape[0]
 
-    val_img = img[:rate*N]
-    img     = img[rate*N:]
-    val_ll  = ll[:rate*N]
-    ll      = ll[rate*N:]
+    p = int(rate * N)
+
+    val_img = img[:p]
+    img     = img[p:]
+    val_ll  = ll[:p]
+    ll      = ll[p:]
 
     return img, ll, val_img, val_ll
 
