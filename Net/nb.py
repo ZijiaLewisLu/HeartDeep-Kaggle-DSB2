@@ -6,8 +6,9 @@ import numpy as np
 import basic_right_shape as b
 import load_data as load
 
-def call(l):
-	print l[:2]
+def call(epoch, symbol, arg_params, aux_params):
+    print '>>>epoch:', epoch
+    print symbol, arg_params, aux_params, '\n\n\n\n\n'
 
 def run(sym):
     # img = np.ones((5,1,256,256))
@@ -34,6 +35,8 @@ def run(sym):
     model.fit(
     	train,
     	eval_data = val,
+        batch_end_callback = mx.callback.ProgressBar(84),
+        epoch_end_callback = call
     	)
 
 

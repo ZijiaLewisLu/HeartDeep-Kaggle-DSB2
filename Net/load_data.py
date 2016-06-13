@@ -69,16 +69,18 @@ def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
             batch_size = batch_size, shuffle=True, last_batch_handle = last_batch_handle)
 
     rate = vimg.shape[0]/img.shape[0]
+
     val   = mx.io.NDArrayIter(
             vimg,
             label=vll, 
-            batch_size = batch_size*rate, shuffle = False, last_batch_handle = last_batch_handle)
+            batch_size = max(1,int(batch_size*rate)), shuffle = False, last_batch_handle = last_batch_handle)
 
     return train, val
 
 
 def get_():
     data = load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
+    print 'shape check', data[0].shape, data[2].shape
     return create_iter(*data, batch_size = 1)
 
     

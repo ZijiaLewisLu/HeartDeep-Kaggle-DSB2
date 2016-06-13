@@ -75,7 +75,7 @@ relu9 = mx.sym.Activation(data = conv9, act_type = 'relu')
 #     num_filter = pm['c10']['fnum'], stride = pm['c10']['stride'], pad = pm['c10']['pad'] )
 # relu10 = mx.sym.Activation(data = conv10, act_type = 'relu')
 
-conv = mx.sym.Convolution(name = 'conv11', data = relu9, kernel = (7,7), num_filter = 1,  
+conv = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = (7,7), num_filter = 1,  
         stride = (1,1), pad = (0,0) )
 out  = mx.sym.Activation(data = conv, act_type = 'sigmoid')
 
