@@ -60,9 +60,11 @@ def run(sym):
     net = mx.sym.Custom(data = sym, name = 'softmax', op_type = 'iou')
     model = mx.model.FeedForward(
         net,
-        learning_rate = 3e-2,
+        learning_rate = 3e-1,
         num_epoch = 10,
-        ctx = mx.context.gpu(1)
+        ctx = mx.context.gpu(1),
+        optimizer = 'adam',
+        initializer = mx.initializer.Xavier(rnd_type = 'gaussian')
     )
 
     # shapes = train.provide_data + train.provide_label

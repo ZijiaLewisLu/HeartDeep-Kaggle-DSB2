@@ -71,6 +71,6 @@ def eval_iou(label, pred):
     # print label
     # print out.dtype
 
-    assert 0<out<1, 'eval error'
+    assert 0<=out<=1, 'eval error >> %f' % (out)
 
     return out
