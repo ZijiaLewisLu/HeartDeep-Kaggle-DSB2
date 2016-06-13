@@ -3,14 +3,14 @@
 *swp
 *pk
 *_mac
-
+*_local
 
 !kaggle_tutorial
 !kaggle-ndsb2
 !dsbAnalysis
-!Top3
+!kaggle_tutorial/analysis_rslt
 
-
+kaggle_tutorial/*/
 DATA/
 SunnyOrigin/
 Top3/
