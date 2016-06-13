@@ -1,9 +1,10 @@
 import ipt
-import minpy as mp
+# import minpy as mp
 #import minpy.numpy as np
 import mxnet as mx
 import numpy as np
 import pickle as pk
+import os
 
 
 def _load_pk_file(fname, rate):
@@ -58,7 +59,9 @@ def load_pk(fname, rate = 0.1):
             np.concatenate(ll_val,vll)
 
     # return img_train , ll_train, img_val, ll_val
-    return img_train + 1e-5, ll_train + 1e-5 , img_val + 1e-5, ll_val + 1e-5
+    # print 'len of val', img_val.shape[0]
+
+    return img_train, ll_train, img_val, ll_val
 
 
 def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
@@ -68,20 +71,24 @@ def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
             label=ll, 
             batch_size = batch_size, shuffle=True, last_batch_handle = last_batch_handle)
 
-    rate = vimg.shape[0]/img.shape[0]
+    # rate = vimg.shape[0]/img.shape[0]
+    # print 'val batch size', int(rate * batch_size)
 
     val   = mx.io.NDArrayIter(
             vimg,
             label=vll, 
-            batch_size = max(1,int(batch_size*rate)), shuffle = False, last_batch_handle = last_batch_handle)
+            batch_size = batch_size, shuffle = False, last_batch_handle = last_batch_handle)
 
     return train, val
 
 
 def get_():
-    data = load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
-    print 'shape check', data[0].shape, data[2].shape
-    return create_iter(*data, batch_size = 1)
+    base_path = '/home/zijia/HeartDeepLearning/Net'
+    pk = [ os.path.join(base_path, f) 
+            for f in ['online.pk'] ]
+    data = load_pk(pk)
+    print 'Data Shape, Train %s, Val %s' % ( data[0].shape, data[2].shape )
+    return create_iter(*data, batch_size = 5)
 
     
 

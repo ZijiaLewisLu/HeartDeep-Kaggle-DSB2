@@ -27,7 +27,7 @@ class IOU(mx.operator.CustomOp):
         out = nd.add(pred, ll)
         out = nd.divide(ll, out)
         # out = (ll/(pred+ll))**2
-        out = nd.multiply(out,out)
+        out = - nd.multiply(out,out)
         self.assign(in_grad[0],req[0],out)
         # print 'out backward'
         
@@ -54,3 +54,23 @@ class IOUProp(mx.operator.CustomOpProp):
 
     def create_operator(self, ctx, shapes, dtypes):
         return IOU()
+
+
+
+
+
+def eval_iou(label, pred):
+    '''don't know why, but input as np arrays'''
+    # assert isinstance(pred, mx.ndarray.NDArray), type(label)
+    conjunct = pred * label
+    union    = pred + label
+
+    out      = np.sum(conjunct*2)/np.sum(union)
+
+    # print pred
+    # print label
+    # print out.dtype
+
+    assert 0<out<1, 'eval error'
+
+    return out
