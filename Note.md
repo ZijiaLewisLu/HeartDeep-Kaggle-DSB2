@@ -11,6 +11,9 @@
 ## Top Solution
 why (source-128)/128
 
+- in `train_predit.py`, areas_all, cont_all are dicts,  *[case] = area
+- ​
+
 ## Second Solution
 - how does net decide whether to use a model
 - How to average over ensembles
@@ -33,4 +36,4 @@ why (source-128)/128
   - values: blob object
     - attrs: channels, shapes, data, diff, count ….
     - -> data: Matice Like (N\*C\*H\* W)
-    -  
+    - ​
