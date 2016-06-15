@@ -16,36 +16,37 @@ import logging
 class Callback():
 
     def __init__(self, name = None):
-        self.loss_hist = {}
+        self.acc_hist = {}
         self.name = name
 
-    def __call__(self, epoch, symbol, arg_params, aux_params, loss):
-        self.loss_hist[epoch] = loss
-        print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(loss)/float(len(loss)) )
+    def __call__(self, epoch, symbol, arg_params, aux_params, acc):
+        self.acc_hist[epoch] = acc
+        print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
+        # print acc
         # print symbol 
         # print arg_params.keys() 
         # print aux_params, '\n\n\n\n\n'
 
     def get_dict(self):
-        return  self.loss_hist
+        return  self.acc_hist
     
     def get_list(self):
         l = []
-        for k in sorted(self.loss_hist.keys()):
+        for k in sorted(self.acc_hist.keys()):
             print k
-            l += self.loss_hist[k]
+            l += self.acc_hist[k]
         return l
 
     def each_to_png(self):
         prefix = '' if self.name  == None else self.name
 
-        for k in sorted(self.loss_hist.keys()):
-            plt.plot(self.loss_hist[k])
+        for k in sorted(self.acc_hist.keys()):
+            plt.plot(self.acc_hist[k])
             plt.savefig(prefix+str(k)+'.png')
 
 
     def reset(self):
-        self.loss_hist = {}
+        self.acc_hist = {}
 
 
 def run(sym):
@@ -63,8 +64,8 @@ def run(sym):
         learning_rate = 3e-1,
         num_epoch = 10,
         ctx = mx.context.gpu(1),
-        optimizer = 'adam',
-        initializer = mx.initializer.Xavier(rnd_type = 'gaussian')
+        # optimizer = 'adam',
+        # initializer = mx.initializer.Xavier(rnd_type = 'gaussian')
     )
 
     # shapes = train.provide_data + train.provide_label

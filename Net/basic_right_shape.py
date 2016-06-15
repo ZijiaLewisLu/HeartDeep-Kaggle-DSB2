@@ -2,11 +2,85 @@ import ipt
 # import minpy as minpy
 import mxnet as mx
 # import minpy.numpy as np
-import create_train_modle as old
-import load_data as load
+# import create_train_modle as old
+# import load_data as load
+from utils import *
 
-pm = old.Params
 
+''' pm refers to Params'''
+
+pm= {
+            'c1':{
+                'fsize' : (7,7),
+                'fnum'  : 8,
+                'pad'   : (0,0),
+                'stride': (1,1),
+            },
+            'c2':{
+                'fsize' : (3,3),
+                'fnum'  : 16,
+                'pad'   : (0,0),
+                'stride': (1,1),
+            },
+            'c3':{
+                'fsize' : (3,3),
+                'fnum'  : 32,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c4':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c5':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c6':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (2,2),
+                'stride': (1,1)
+            },
+            'c7':{
+                'fsize' : (3,3),
+                'fnum'  : 64,
+                'pad'   : (2,2),
+                'stride': (1,1)
+            },
+            'c8':{
+                'fsize' : (7,7),
+                'fnum'  : 64,
+                'pad'   : (6,6),
+                'stride': (1,1)
+            },
+            'c9':{
+                'fsize' : (3,3),
+                'fnum'  : 16,
+                'pad'   : (2,2),
+                'stride': (1,1)
+            },
+            'c10':{
+                'fsize' : (7,7),
+                'fnum'  : 8,
+                'pad'   : (0,0),
+                'stride': (1,1)
+            },
+            'c11':{
+                'fsize' : (7,7),
+                'fnum'  : 1,
+                'pad'   : (6,6),
+                'stride': (1,1)
+            }
+        }
+
+
+###############################################################
+###############################################################
 
 ''' pm should be a dict of the params of each layers '''
 data = mx.sym.Variable(name= 'data')  #name must be data, don't know why
@@ -79,5 +153,4 @@ conv = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = (7,7), num_fil
         stride = (1,1), pad = (0,0) )
 out  = mx.sym.Activation(data = conv, act_type = 'sigmoid')
 
-
-
+# net = mx.sym.Custom(data = out, name = 'softmax', op_type = 'iou')

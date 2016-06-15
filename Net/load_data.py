@@ -12,8 +12,8 @@ def _load_pk_file(fname, rate):
         img = pk.load(f)
         ll  = pk.load(f)
 
-    # print '-mean'
-    # img -= img.mean(axis = 0)
+    print '-mean'
+    img -= img.mean(axis = 0)
     # ll  -= ll.mean (axis = 0)
 
     img = img[:,None,:,:]
@@ -82,13 +82,13 @@ def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
     return train, val
 
 
-def get_():
+def get_(bs):
     base_path = '/home/zijia/HeartDeepLearning/Net'
     pk = [ os.path.join(base_path, f) 
             for f in ['online.pk'] ]
     data = load_pk(pk)
     print 'Data Shape, Train %s, Val %s' % ( data[0].shape, data[2].shape )
-    return create_iter(*data, batch_size = 5)
+    return create_iter(*data, batch_size = bs)
 
     
 

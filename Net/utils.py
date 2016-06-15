@@ -1,7 +1,8 @@
-import ipt
+import ipt, time, os
 import mxnet as mx
 import numpy as np
 import mxnet.ndarray as nd
+import matplotlib.pyplot as plt
 
 class IOU(mx.operator.CustomOp):
 
@@ -31,7 +32,6 @@ class IOU(mx.operator.CustomOp):
         self.assign(in_grad[0],req[0],out)
         # print 'out backward'
         
-
 @mx.operator.register("iou")
 class IOUProp(mx.operator.CustomOpProp):
     # def __init__():
@@ -55,10 +55,6 @@ class IOUProp(mx.operator.CustomOpProp):
     def create_operator(self, ctx, shapes, dtypes):
         return IOU()
 
-
-
-
-
 def eval_iou(label, pred):
     '''don't know why, but input as np arrays'''
     # assert isinstance(pred, mx.ndarray.NDArray), type(label)
@@ -74,3 +70,46 @@ def eval_iou(label, pred):
     assert 0<=out<=1, 'eval error >> %f' % (out)
 
     return out
+
+class Callback():
+
+    def __init__(self, name = None):
+        self.acc_hist = {}
+        self.name = name
+
+    def __call__(self, epoch, symbol, arg_params, aux_params, acc):
+        self.acc_hist[epoch] = acc
+        print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
+        # print acc
+        # print symbol 
+        # print arg_params.keys() 
+        # print aux_params, '\n\n\n\n\n'
+
+    def get_dict(self):
+        return  self.acc_hist
+    
+    def get_list(self):
+        l = []
+        for k in sorted(self.acc_hist.keys()):
+            print k
+            l += self.acc_hist[k]
+        return l
+
+    def each_to_png(self):
+        if self.name  == None:
+            now = time.ctime(int(time.time()))
+            now = now.split(' ')
+            prefix = now[2]+'-'+now[3]
+        else:
+            prefix = self.name
+
+        prefix = os.path.join('Img', prefix)
+        os.mkdir(prefix)
+
+        for k in sorted(self.acc_hist.keys()):
+            plt.plot(self.acc_hist[k])
+            path = os.path.join(prefix, str(k)+'.png')
+            plt.savefig( path )
+
+    def reset(self):
+        self.acc_hist = {}

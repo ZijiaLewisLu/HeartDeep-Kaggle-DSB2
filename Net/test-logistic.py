@@ -2,51 +2,37 @@ import ipt
 import mxnet as mx
 import basic_right_shape as b
 import load_data as load
-import create_train_modle as ctm
+from utils import *
+import matplotlib.pyplot as plt
+# import create_train_modle as ctm
 
-def lnet():
-	return mx.sym.LogisticRegressionOutput(b.out, name = 'softmax')
 
-def callback(l):
-	print 'callback' , l[0]
+net = mx.sym.LogisticRegressionOutput(data = b.out, name = 'softmax')
 
 def train_l():
 
-	train, val = load.get_()
+	train, val = load.get_(1)
 
-	net = lnet()
+	c = Callback()
 
 	model = mx.model.FeedForward(
 		net,
-        num_epoch = 100
+		learning_rate = 1e-1,
+		ctx = mx.context.gpu(1),
+        num_epoch = 10
 		)
 
-	print 'here'
-
+	print 'start to train ...'
 	model.fit(
 		train,
 		eval_data = val,
-        eval_metric = 'acc', 
+        eval_metric = mx.metric.create(eval_iou), 
         # num_epoch = 1000,
-        batch_end_callback = callback,
+        epoch_end_callback = c,
+        batch_end_callback = mx.callback.ProgressBar(1000)
 		)
 
-def no_iter():
-	img, ll, vimg, vll = load.load_pk('/home/zijia/HeartDeepLearning/Net/o1.pk')
-
-	model = mx.model.FeedForward(
-		lnet(),
-		numpy_batch_size = 1,
-		)
-
-	model.fit(img,ll,
-		batch_end_callback = callback,
-		num_epoch = 100
-		)
-
-def main():
-	# no_iter()
-	train_l()
+	c.each_to_png()
 
 if __name__ == '__main__':
-	main()
+	train_l()
