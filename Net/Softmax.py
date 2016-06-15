@@ -10,16 +10,8 @@ class Sfmx(mx.operator.CustomOp):
         # self.First = True
 
     def forward(self, is_train, req, in_data, out_data, aux):
-        # pred = in_data[0]
 
-        # pred = 1 - 2 * pred
-
-        # out = 1/ ( 1 + pred )
-
-        # nd.concatenate(is_pred, not_pred)
-
-        # is_pred  = nd.exp(is_pred)
-        # not_pred = nd.exo(not_pred)
+        #Do nothing!
 
         self.assign(out_data[0],req[0],in_data[0])
         # print 'out forward'
@@ -34,10 +26,12 @@ class Sfmx(mx.operator.CustomOp):
 
         pred = in_data[0]
 
-        one = mx.ndarray.ones(1)
+        one = mx.ndarray.ones(1, ctx = mx.context.gpu(1))
         e   = mx.ndarray.exp(one)
 
-        base  = mx.ndarray.exp(pred) + mx.ndarray.exp(1-pred)
+        base  = mx.ndarray.exp(pred) + mx.ndarray.exp(1-pred)\
+
+        # print 'before grad_is'
 
         grad_is = e*2/(base*base)
 
@@ -45,12 +39,12 @@ class Sfmx(mx.operator.CustomOp):
 
         grad_not = - grad_is
 
-        out = is_label*grad_is + not_label*grad_not
+        out = - is_label*grad_is - not_label*grad_not
 
         self.assign(in_grad[0], req[0], out)
 
 @mx.operator.register("sfmx")
-class Sfmx(mx.operator.CustomOpProp):
+class SfmxProp(mx.operator.CustomOpProp):
     # def __init__():
         # super(IOUProp,self).__init__(need_top_grad=False)
 

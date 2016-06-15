@@ -91,5 +91,11 @@ def get_(bs):
     return create_iter(*data, batch_size = bs)
 
     
+def get_small(bs):
+    base_path = '/home/zijia/HeartDeepLearning/Net'
+    pk = os.path.join(base_path, 'o1.pk') 
+    data = load_pk(pk)
+    print 'Data Shape, Train %s, Val %s' % ( data[0].shape, data[2].shape )
+    return create_iter(*data, batch_size = bs)    
 
 
