@@ -34,13 +34,16 @@ class Sfmx(mx.operator.CustomOp):
 
         pred = in_data[0]
 
-        exp  = nd.exp(1-2*pred)
+        one = mx.ndarray.ones(1)
+        e   = mx.ndarray.exp(one)
 
-        grad_is = (1-2*pred)*exp/(1+exp)**2
+        base  = mx.ndarray.exp(pred) + mx.ndarray.exp(1-pred)
 
-        exp  = nd.exp(2*pred-1)
+        grad_is = e*2/(base*base)
 
-        grad_not =(2*pred-1)*exp/(1+exp)**2
+        # exp  = nd.exp(2*pred-1)
+
+        grad_not = - grad_is
 
         out = is_label*grad_is + not_label*grad_not
 
