@@ -18,3 +18,4 @@ caffe_FCN/
 .ipynb_checkpoints/
 kaggle_tutorial/iou_mac
 dataset
+Net/Img/*
