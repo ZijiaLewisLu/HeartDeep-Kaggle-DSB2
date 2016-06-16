@@ -82,20 +82,34 @@ def create_iter(img,ll,vimg,vll,batch_size =50,last_batch_handle='pad'):
     return train, val
 
 
-def get_(bs):
-    base_path = '/home/zijia/HeartDeepLearning/Net'
-    pk = [ os.path.join(base_path, f) 
-            for f in ['online.pk'] ]
-    data = load_pk(pk)
-    print 'Data Shape, Train %s, Val %s' % ( data[0].shape, data[2].shape )
-    return create_iter(*data, batch_size = bs)
-
+def load(filename, bs = 10, return_raw = False):
     
-def get_small(bs):
-    base_path = '/home/zijia/HeartDeepLearning/Net'
-    pk = os.path.join(base_path, 'o1.pk') 
-    data = load_pk(pk)
+    data = load_pk(filename)
     print 'Data Shape, Train %s, Val %s' % ( data[0].shape, data[2].shape )
-    return create_iter(*data, batch_size = bs)    
+
+    train, val = create_iter(**data, bathc_size = bs)
+
+    output = {
+        'train': train,
+        'val'  : val
+        }
+
+    if return_raw:
+        output['train_img'] = data[0]
+        output['train_label'] = data[1]]
+        output['val_img'] = data[2]
+        output['val_label'] = data[3]
+
+    return output
+
+def get(bs, small = False, return_raw = False):
+
+    if small:
+        f = "/home/zijia/HeartDeepLearning/Net/o1.pk"
+    else:
+        f = 'home/zijia/HeartDeepLearning/Net/online.pk'
+
+    return load(f,bs = bs, return_raw = return_raw)    
+
 
 

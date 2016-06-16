@@ -91,13 +91,10 @@ class Callback():
 
     def __init__(self, name = None):
         self.acc_hist = {}
-        self.arg  = {}
         self.name = name
 
     def __call__(self, epoch, symbol, arg_params, aux_params, acc):
         self.acc_hist[epoch] = acc
-        print epoch, self.acc_hist.keys()
-        self.arg[epoch] = arg_params
         print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
         # print acc
         # print symbol 
@@ -214,7 +211,7 @@ def load(filename, bs = 10, return_raw = False):
     data = load_pk(filename)
     print 'Data Shape, Train %s, Val %s' % ( data[0].shape, data[2].shape )
 
-    train, val = create_iter(*data, batch_size = bs)
+    train, val = create_iter(*data, bathc_size = bs)
 
     output = {
         'train': train,
