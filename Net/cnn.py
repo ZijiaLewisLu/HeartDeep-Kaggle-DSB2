@@ -17,7 +17,7 @@ def batch_end(params):
 
 
 def train():
-	out = get(1, small = True)
+	out = get(1)
 
 	train = out['train']
 	val   = out['val']
@@ -28,7 +28,7 @@ def train():
 		net,
 		ctx = mx.context.gpu(1),
 		learning_rate = 1,
-		num_epoch = 1,
+		num_epoch = 100,
 		)
 
 	c = Callback()
@@ -41,13 +41,22 @@ def train():
 		epoch_end_callback = c
 		)
 
-		# model.predict(
-		# 	val,
-		# 	num_batch = 1,
-		# 	return_data = True
-		# 	)
+        pred =  model.predict(
+		val,
+		num_batch = 5,
+		return_data = True
+		)
+        
+        N = pred[0].shape[0]
+        for idx in range(N):
+            fig = plt.figure()
+            for num in range(3):
+                fig.add_subplot(131+num).imshow(pred[num][idx,0])
+            fig.savefig('Pred/%s-%d.png'%(c.name, idx))
 
-	c.each_to_png()
+
+
+#	c.each_to_png()
 
 	return c
 
