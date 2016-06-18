@@ -11,6 +11,9 @@ import os, pickle as pk
 def eval_iou(label, pred):
     '''don't know why, but input as np arrays'''
     # assert isinstance(pred, mx.ndarray.NDArray), type(label)
+
+    # print '>', pred.mean()
+
     conjunct = pred * label
     union    = pred + label
 
@@ -20,7 +23,8 @@ def eval_iou(label, pred):
     # print label
     # print out.dtype
 
-    assert 0<=out<=1, 'eval error >> %f' % (out)
+    if not 0<=out<=1:
+        print 'eval error >>', out, np.sum(conjunct), np.sum(union)
 
     return out
 
@@ -39,24 +43,31 @@ class Callback():
 
     def __call__(self, epoch, symbol, arg_params, aux_params, acc):
         self.acc_hist[epoch] = acc
-        print epoch, self.acc_hist.keys()
         self.arg[epoch] = arg_params
         print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
+
+        # for i in range(10):
+        #         print 'bn%d'%i, \
+        #         'beta',  arg_params['batchnorm%d_beta'% i].asnumpy().mean(), \
+        #         'gamma', arg_params['batchnorm%d_gamma' % i].asnumpy().mean()
+
+        # assert False
         # print acc
         # print symbol 
         # print arg_params.keys() 
         # print aux_params, '\n\n\n\n\n'
 
-        prefix = os.path.join('Img', self.name)
-        try:
-            os.mkdir(prefix)
-        except Exception ,e:
-            pass
+        #######to png
+        # prefix = os.path.join('Img', self.name)
+        # try:
+        #     os.mkdir(prefix)
+        # except Exception ,e:
+        #     pass
 
-        plt.plot(acc)
-        path = os.path.join(prefix, str(epoch)+'.png')
-        plt.savefig( path )
-        plt.close()
+        # plt.plot(acc)
+        # path = os.path.join(prefix, str(epoch)+'.png')
+        # plt.savefig( path )
+        # plt.close()
 
     def get_dict(self):
         return  self.acc_hist
@@ -64,7 +75,6 @@ class Callback():
     def get_list(self):
         l = []
         for k in sorted(self.acc_hist.keys()):
-            print k
             l += self.acc_hist[k]
         return l
 
@@ -81,6 +91,20 @@ class Callback():
             path = os.path.join(prefix, str(k)+'.png')
             plt.savefig( path )
             plt.close()
+
+    def all_to_png(self):
+        l = self.get_list()
+        prefix = os.path.join('Img', self.name)
+        try:
+            os.mkdir(prefix)
+        except Exception ,e:
+            pass
+
+        plt.plot(l)
+        path = os.path.join(prefix, 'all.png')
+        plt.savefig( path )
+        plt.close()
+
 
     def reset(self):
         self.acc_hist = {}
@@ -187,8 +211,8 @@ def get(bs, small = False, return_raw = False):
         f = "/home/zijia/HeartDeepLearning/Net/o1.pk"
     else:
         f = [
-                'home/zijia/HeartDeepLearning/Net/online.pk',
-                'home/zijia/HeartDeepLearning/Net/validate.pk',
+                '/home/zijia/HeartDeepLearning/Net/online.pk',
+                '/home/zijia/HeartDeepLearning/Net/validate.pk',
             ]
 
     return load(f,bs = bs, return_raw = return_raw)   
