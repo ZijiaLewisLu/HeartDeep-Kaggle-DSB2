@@ -208,11 +208,11 @@ def load(filename, bs = 10, return_raw = False):
 def get(bs, small = False, return_raw = False):
 
     if small:
-        f = "/home/zijia/HeartDeepLearning/Net/o1.pk"
+        f = "/home/zijia/HeartDeepLearning/Net/data/o1.pk"
     else:
         f = [
-                '/home/zijia/HeartDeepLearning/Net/online.pk',
-                '/home/zijia/HeartDeepLearning/Net/validate.pk',
+                '/home/zijia/HeartDeepLearning/Net/data/online.pk',
+                '/home/zijia/HeartDeepLearning/Net/data/validate.pk',
             ]
 
     return load(f,bs = bs, return_raw = return_raw)   
@@ -298,7 +298,8 @@ class Sfmx(mx.operator.CustomOp):
 
         pred = in_data[0]
 
-        one = mx.ndarray.ones(1, ctx = mx.context.gpu(1))
+        ctxxx = pred.context
+        one = mx.ndarray.ones(1, ctx = ctxxx)
         e   = mx.ndarray.exp(one)
 
         base  = mx.ndarray.exp(pred) + mx.ndarray.exp(1-pred)\

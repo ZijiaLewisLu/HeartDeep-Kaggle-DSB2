@@ -168,6 +168,10 @@ relu9 = mx.sym.Activation(data = bn9, act_type = 'relu')
 conv10 = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = (7,7), num_filter = 1,  
         stride = (1,1), pad = (0,0) )
 bn10 = mx.sym.BatchNorm(data = conv10)
+
+# Fully
+# Softmax 
+
 out  = mx.sym.Activation(data = bn10, act_type = 'sigmoid')
 
 # net = mx.sym.Custom(data = out, name = 'softmax', op_type = 'iou')

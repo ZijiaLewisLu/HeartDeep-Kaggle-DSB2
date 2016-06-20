@@ -9,7 +9,7 @@ import os
 os.environ['MXNET_ENGINE_TYPE'] = 'NaiveEngine'
 
 def batch_end(params):
-	'''epoch, nbatch, eval_metric, locals '''
+	"""epoch, nbatch, eval_metric, locals """
 	# o = params[3]['arg_params']['batchnorm9_beta'].asnumpy().mean()  # params[3]['arg_params']['batchnorm9_gamma'].asnumpy()
 	# print params[3]['arg_params']['batchnorm9_beta'].shape
 
@@ -38,7 +38,19 @@ def train():
 	train = out['train']
 	val   = out['val']
 
-	net = mx.sym.Custom(data = n.out, name = 'softmax', op_type = 'sfmx')
+	net = mx.sym.Reshape(data = n.bn10, target_shape = (0, 1*256*256))
+	net = mx.sym.FullyConnected(data = net, name = 'full1', num_hidden = 100)
+	net = mx.sym.FullyConnected(data = net, name = 'full2', num_hidden = 1*256*256)
+
+	# print net.infer_shape(data = (10,1,256,256))[1]
+
+	net = mx.sym.Reshape(data = net, target_shape = (0,1,256,256))
+	
+	# print net.infer_shape(data = (10,1,256,256))[0]
+
+	# net = mx.sym.FullConnected()
+	net = mx.sym.Activation(data = net, act_type = 'sigmoid')
+	net = mx.sym.Custom(data = net, name = 'softmax', op_type = 'sfmx')
 	# net = mx.sym.LogisticRegressionOutput(data = n.out, name = 'softmax')
 
 
