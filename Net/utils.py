@@ -7,7 +7,6 @@ import os, pickle as pk
 
 
 
-
 def eval_iou(label, pred):
     '''don't know why, but input as np arrays'''
     # assert isinstance(pred, mx.ndarray.NDArray), type(label)
@@ -19,96 +18,10 @@ def eval_iou(label, pred):
 
     out      = np.sum(conjunct*2)/np.sum(union)
 
-    # print pred
-    # print label
-    # print out.dtype
-
     if not 0<=out<=1:
         print 'eval error >>', out, np.sum(conjunct), np.sum(union)
 
     return out
-
-class Callback():
-
-    def __init__(self, name = None):
-        self.acc_hist = {}
-        self.arg  = {}
-
-        if name  == None:
-            now = time.ctime(int(time.time()))
-            now = now.split(' ')
-            self.name = now[2]+'-'+now[3]
-        else:
-            self.name = name
-
-    def __call__(self, epoch, symbol, arg_params, aux_params, acc):
-        self.acc_hist[epoch] = acc
-        self.arg[epoch] = arg_params
-        print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
-
-        # for i in range(10):
-        #         print 'bn%d'%i, \
-        #         'beta',  arg_params['batchnorm%d_beta'% i].asnumpy().mean(), \
-        #         'gamma', arg_params['batchnorm%d_gamma' % i].asnumpy().mean()
-
-        # assert False
-        # print acc
-        # print symbol 
-        # print arg_params.keys() 
-        # print aux_params, '\n\n\n\n\n'
-
-        #######to png
-        # prefix = os.path.join('Img', self.name)
-        # try:
-        #     os.mkdir(prefix)
-        # except Exception ,e:
-        #     pass
-
-        # plt.plot(acc)
-        # path = os.path.join(prefix, str(epoch)+'.png')
-        # plt.savefig( path )
-        # plt.close()
-
-    def get_dict(self):
-        return  self.acc_hist
-    
-    def get_list(self):
-        l = []
-        for k in sorted(self.acc_hist.keys()):
-            l += self.acc_hist[k]
-        return l
-
-    def each_to_png(self):
-
-        prefix = os.path.join('Img', self.name)
-        try:
-            os.mkdir(prefix)
-        except Exception ,e:
-            pass
-
-        for k in sorted(self.acc_hist.keys()):
-            plt.plot(self.acc_hist[k])
-            path = os.path.join(prefix, str(k)+'.png')
-            plt.savefig( path )
-            plt.close()
-
-    def all_to_png(self):
-        l = self.get_list()
-        prefix = os.path.join('Img', self.name)
-        try:
-            os.mkdir(prefix)
-        except Exception ,e:
-            pass
-
-        plt.plot(l)
-        path = os.path.join(prefix, 'all.png')
-        plt.savefig( path )
-        plt.close()
-
-
-    def reset(self):
-        self.acc_hist = {}
-        self.arg      = {}
 
 def _load_pk_file(fname, rate):
     with open(fname,'r') as f:
@@ -218,6 +131,79 @@ def get(bs, small = False, return_raw = False):
     return load(f,bs = bs, return_raw = return_raw)   
 
 
+class Callback():
+
+    def __init__(self, name = None):
+        self.acc_hist = {}
+        self.arg  = {}
+
+        if name  == None:
+            now = time.ctime(int(time.time()))
+            now = now.split(' ')
+            self.name = now[2]+'-'+now[3]
+        else:
+            self.name = name
+
+    def epoch(self, epoch, symbol, arg_params, aux_params, acc):
+        self.acc_hist[epoch] = acc
+        self.arg[epoch] = arg_params
+        print np.sum(acc),
+        print float(len(acc))
+        print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
+
+    def batch(self, params):
+        """epoch, nbatch, eval_metric, locals """
+        for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].param_arrays):
+            n, p = pairs
+            if 'beta' in n:
+                shape = p[0].shape
+                conttx = p[0].context
+                p[0] = mx.ndarray.zeros(shape, ctx = conttx)
+
+    def get_dict(self):
+        return  self.acc_hist
+    
+    def get_list(self):
+        l = []
+        for k in sorted(self.acc_hist.keys()):
+            l += self.acc_hist[k]
+        return l
+
+    def each_to_png(self):
+
+        prefix = os.path.join('Img', self.name)
+        try:
+            os.mkdir(prefix)
+        except Exception ,e:
+            pass
+
+        for k in sorted(self.acc_hist.keys()):
+            plt.plot(self.acc_hist[k])
+            path = os.path.join(prefix, str(k)+'.png')
+            plt.savefig( path )
+            plt.close()
+
+    def all_to_png(self):
+        l = self.get_list()
+        prefix = os.path.join('Img', self.name)
+        try:
+            os.mkdir(prefix)
+        except Exception ,e:
+            pass
+
+        plt.plot(l)
+        path = os.path.join(prefix, 'all.png')
+        plt.savefig( path )
+        plt.close()
+
+
+    def reset(self):
+        self.acc_hist = {}
+        self.arg      = {}
+
+
+
+
 ####################################################
 
 class IOU(mx.operator.CustomOp):
@@ -250,8 +236,8 @@ class IOU(mx.operator.CustomOp):
         
 @mx.operator.register("iou")
 class IOUProp(mx.operator.CustomOpProp):
-    # def __init__():
-        # super(IOUProp,self).__init__(need_top_grad=False)
+    def __init__():
+        super(IOUProp,self).__init__(need_top_grad=False)
 
     def list_arguments(self):
         return ['data','label']
@@ -276,10 +262,6 @@ class IOUProp(mx.operator.CustomOpProp):
 
 
 class Sfmx(mx.operator.CustomOp):
-
-    # def __init__(self):
-        # super(IOU,self).__init__(self)
-        # self.First = True
 
     def forward(self, is_train, req, in_data, out_data, aux):
 
@@ -319,8 +301,9 @@ class Sfmx(mx.operator.CustomOp):
 
 @mx.operator.register("sfmx")
 class SfmxProp(mx.operator.CustomOpProp):
-    # def __init__():
-        # super(IOUProp,self).__init__(need_top_grad=False)
+
+    def __init__(self):
+        super(SfmxProp,self).__init__(need_top_grad=False)
 
     def list_arguments(self):
         return ['data','label']
@@ -339,3 +322,45 @@ class SfmxProp(mx.operator.CustomOpProp):
 
     def create_operator(self, ctx, shapes, dtypes):
         return Sfmx()
+
+#############################################################
+from mxnet.metric import EvalMetric
+class RnnM(EvalMetric):
+    """Custom evaluation metric that takes a NDArray function.
+
+    Parameters
+    ----------
+    feval : callable(label, pred)
+        Customized evaluation function.
+    name : str, optional
+        The name of the metric
+    allow_extra_outputs : bool
+        If true, the prediction outputs can have extra outputs.
+        This is useful in RNN, where the states are also produced
+        in outputs for forwarding.
+    """
+    def __init__(self, feval, name=None, allow_extra_outputs=True):
+        if name is None:
+            name = feval.__name__
+            if name.find('<') != -1:
+                name = 'custom(%s)' % name
+        super(RnnM, self).__init__(name)
+        self._feval = feval
+        self._allow_extra_outputs = allow_extra_outputs
+
+    def update(self, labels, preds):
+        # if not self._allow_extra_outputs:
+        #     check_label_shapes(labels, preds)
+
+        pred, label  = preds[0], labels[0]
+        label = label.asnumpy()
+        pred = pred.asnumpy()
+
+        reval = self._feval(label, pred)
+        if isinstance(reval, tuple):
+            (sum_metric, num_inst) = reval
+            self.sum_metric += sum_metric
+            self.num_inst += num_inst
+        else:
+            self.sum_metric += reval
+            self.num_inst += 1

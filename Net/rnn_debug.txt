@@ -1,0 +1,274 @@
+Outputs:
+	output[0]=_plus1(0)
+	output[1]=_mul2(0)
+	output[2]=loss(0)
+Variable:data
+Variable:conv1_weight
+Variable:conv1_bias
+Name: conv1 Type:Convolution
+Inputs:
+	arg[0]=data(0)
+	arg[1]=conv1_weight(0)
+	arg[2]=conv1_bias(0)
+Variable:batchnorm0_gamma
+Variable:batchnorm0_beta
+Name: batchnorm0 Type:BatchNorm
+Inputs:
+	arg[0]=conv1(0)
+	arg[1]=batchnorm0_gamma(0)
+	arg[2]=batchnorm0_beta(0)
+Name: activation0 Type:Activation
+Inputs:
+	arg[0]=batchnorm0(0)
+Variable:conv2_weight
+Variable:conv2_bias
+Name: conv2 Type:Convolution
+Inputs:
+	arg[0]=activation0(0)
+	arg[1]=conv2_weight(0)
+	arg[2]=conv2_bias(0)
+Variable:batchnorm1_gamma
+Variable:batchnorm1_beta
+Name: batchnorm1 Type:BatchNorm
+Inputs:
+	arg[0]=conv2(0)
+	arg[1]=batchnorm1_gamma(0)
+	arg[2]=batchnorm1_beta(0)
+Name: activation1 Type:Activation
+Inputs:
+	arg[0]=batchnorm1(0)
+Name: pooling0 Type:Pooling
+Inputs:
+	arg[0]=activation1(0)
+Variable:conv3_weight
+Variable:conv3_bias
+Name: conv3 Type:Convolution
+Inputs:
+	arg[0]=pooling0(0)
+	arg[1]=conv3_weight(0)
+	arg[2]=conv3_bias(0)
+Variable:batchnorm2_gamma
+Variable:batchnorm2_beta
+Name: batchnorm2 Type:BatchNorm
+Inputs:
+	arg[0]=conv3(0)
+	arg[1]=batchnorm2_gamma(0)
+	arg[2]=batchnorm2_beta(0)
+Name: activation2 Type:Activation
+Inputs:
+	arg[0]=batchnorm2(0)
+Name: pooling1 Type:Pooling
+Inputs:
+	arg[0]=activation2(0)
+Variable:conv4_weight
+Variable:conv4_bias
+Name: conv4 Type:Convolution
+Inputs:
+	arg[0]=pooling1(0)
+	arg[1]=conv4_weight(0)
+	arg[2]=conv4_bias(0)
+Variable:batchnorm3_gamma
+Variable:batchnorm3_beta
+Name: batchnorm3 Type:BatchNorm
+Inputs:
+	arg[0]=conv4(0)
+	arg[1]=batchnorm3_gamma(0)
+	arg[2]=batchnorm3_beta(0)
+Name: activation3 Type:Activation
+Inputs:
+	arg[0]=batchnorm3(0)
+Name: pooling2 Type:Pooling
+Inputs:
+	arg[0]=activation3(0)
+Variable:conv5_weight
+Variable:conv5_bias
+Name: conv5 Type:Convolution
+Inputs:
+	arg[0]=pooling2(0)
+	arg[1]=conv5_weight(0)
+	arg[2]=conv5_bias(0)
+Variable:batchnorm4_gamma
+Variable:batchnorm4_beta
+Name: batchnorm4 Type:BatchNorm
+Inputs:
+	arg[0]=conv5(0)
+	arg[1]=batchnorm4_gamma(0)
+	arg[2]=batchnorm4_beta(0)
+Name: activation4 Type:Activation
+Inputs:
+	arg[0]=batchnorm4(0)
+Variable:conv6_weight
+Variable:conv6_bias
+Name: conv6 Type:Convolution
+Inputs:
+	arg[0]=activation4(0)
+	arg[1]=conv6_weight(0)
+	arg[2]=conv6_bias(0)
+Variable:batchnorm5_gamma
+Variable:batchnorm5_beta
+Name: batchnorm5 Type:BatchNorm
+Inputs:
+	arg[0]=conv6(0)
+	arg[1]=batchnorm5_gamma(0)
+	arg[2]=batchnorm5_beta(0)
+Name: activation5 Type:Activation
+Inputs:
+	arg[0]=batchnorm5(0)
+Variable:deconvolution0_weight
+Name: deconvolution0 Type:Deconvolution
+Inputs:
+	arg[0]=activation5(0)
+	arg[1]=deconvolution0_weight(0)
+Variable:conv7_weight
+Variable:conv7_bias
+Name: conv7 Type:Convolution
+Inputs:
+	arg[0]=deconvolution0(0)
+	arg[1]=conv7_weight(0)
+	arg[2]=conv7_bias(0)
+Variable:batchnorm6_gamma
+Variable:batchnorm6_beta
+Name: batchnorm6 Type:BatchNorm
+Inputs:
+	arg[0]=conv7(0)
+	arg[1]=batchnorm6_gamma(0)
+	arg[2]=batchnorm6_beta(0)
+Name: activation6 Type:Activation
+Inputs:
+	arg[0]=batchnorm6(0)
+Variable:deconvolution1_weight
+Name: deconvolution1 Type:Deconvolution
+Inputs:
+	arg[0]=activation6(0)
+	arg[1]=deconvolution1_weight(0)
+Variable:conv8_weight
+Variable:conv8_bias
+Name: conv8 Type:Convolution
+Inputs:
+	arg[0]=deconvolution1(0)
+	arg[1]=conv8_weight(0)
+	arg[2]=conv8_bias(0)
+Variable:batchnorm7_gamma
+Variable:batchnorm7_beta
+Name: batchnorm7 Type:BatchNorm
+Inputs:
+	arg[0]=conv8(0)
+	arg[1]=batchnorm7_gamma(0)
+	arg[2]=batchnorm7_beta(0)
+Name: activation7 Type:Activation
+Inputs:
+	arg[0]=batchnorm7(0)
+Variable:deconvolution2_weight
+Name: deconvolution2 Type:Deconvolution
+Inputs:
+	arg[0]=activation7(0)
+	arg[1]=deconvolution2_weight(0)
+Variable:conv9_weight
+Variable:conv9_bias
+Name: conv9 Type:Convolution
+Inputs:
+	arg[0]=deconvolution2(0)
+	arg[1]=conv9_weight(0)
+	arg[2]=conv9_bias(0)
+Variable:batchnorm8_gamma
+Variable:batchnorm8_beta
+Name: batchnorm8 Type:BatchNorm
+Inputs:
+	arg[0]=conv9(0)
+	arg[1]=batchnorm8_gamma(0)
+	arg[2]=batchnorm8_beta(0)
+Name: activation8 Type:Activation
+Inputs:
+	arg[0]=batchnorm8(0)
+Variable:conv10_weight
+Variable:conv10_bias
+Name: conv10 Type:Convolution
+Inputs:
+	arg[0]=activation8(0)
+	arg[1]=conv10_weight(0)
+	arg[2]=conv10_bias(0)
+Variable:batchnorm9_gamma
+Variable:batchnorm9_beta
+Name: batchnorm9 Type:BatchNorm
+Inputs:
+	arg[0]=conv10(0)
+	arg[1]=batchnorm9_gamma(0)
+	arg[2]=batchnorm9_beta(0)
+Name: reshape0 Type:Reshape
+Inputs:
+	arg[0]=batchnorm9(0)
+Variable:rnn_i2h_weight
+Variable:rnn_i2h_bias
+Name: rnn_i2h Type:FullyConnected
+Inputs:
+	arg[0]=reshape0(0)
+	arg[1]=rnn_i2h_weight(0)
+	arg[2]=rnn_i2h_bias(0)
+Variable:h
+Variable:rnn_h2h_weight
+Variable:rnn_h2h_bias
+Name: rnn_h2h Type:FullyConnected
+Inputs:
+	arg[0]=h(0)
+	arg[1]=rnn_h2h_weight(0)
+	arg[2]=rnn_h2h_bias(0)
+Name: _plus0 Type:_Plus
+Inputs:
+	arg[0]=rnn_i2h(0)
+	arg[1]=rnn_h2h(0)
+Name: rnn_slice Type:SliceChannel
+Inputs:
+	arg[0]=_plus0(0)
+Name: activation12 Type:Activation
+Inputs:
+	arg[0]=rnn_slice(2)
+Variable:c
+Name: _mul0 Type:_Mul
+Inputs:
+	arg[0]=activation12(0)
+	arg[1]=c(0)
+Name: activation10 Type:Activation
+Inputs:
+	arg[0]=rnn_slice(0)
+Name: activation11 Type:Activation
+Inputs:
+	arg[0]=rnn_slice(1)
+Name: _mul1 Type:_Mul
+Inputs:
+	arg[0]=activation10(0)
+	arg[1]=activation11(0)
+Name: _plus1 Type:_Plus
+Inputs:
+	arg[0]=_mul0(0)
+	arg[1]=_mul1(0)
+Name: activation13 Type:Activation
+Inputs:
+	arg[0]=rnn_slice(3)
+Name: activation14 Type:Activation
+Inputs:
+	arg[0]=_plus1(0)
+Name: _mul2 Type:_Mul
+Inputs:
+	arg[0]=activation13(0)
+	arg[1]=activation14(0)
+Variable:pred_weight
+Variable:pred_bias
+Name: pred Type:FullyConnected
+Inputs:
+	arg[0]=_mul2(0)
+	arg[1]=pred_weight(0)
+	arg[2]=pred_bias(0)
+Name: reshape2 Type:Reshape
+Inputs:
+	arg[0]=pred(0)
+Name: activation15 Type:Activation
+Inputs:
+	arg[0]=reshape2(0)
+Variable:softmax_label
+Name: softmax Type:Custom
+Inputs:
+	arg[0]=activation15(0)
+	arg[1]=softmax_label(0)
+Name: loss Type:MakeLoss
+Inputs:
+	arg[0]=softmax(0)

@@ -10,9 +10,7 @@ os.environ['MXNET_ENGINE_TYPE'] = 'NaiveEngine'
 
 def batch_end(params):
 	"""epoch, nbatch, eval_metric, locals """
-	# o = params[3]['arg_params']['batchnorm9_beta'].asnumpy().mean()  # params[3]['arg_params']['batchnorm9_gamma'].asnumpy()
-	# print params[3]['arg_params']['batchnorm9_beta'].shape
-
+	
 	for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].param_arrays):
 		n, p = pairs
 		if 'beta' in n:
@@ -20,13 +18,6 @@ def batch_end(params):
 			conttx = p[0].context
 			p[0] = mx.ndarray.zeros(shape, ctx = conttx)
 
-	# assert False
-
-	# if o != 0.0:
-		# print 'BETA ERROR', o
-		# params[3]['arg_params']['batchnorm9_beta'] = mx.ndarray.zeros((1,))
-	# print '>> beta',o, params[3]['arg_params']['batchnorm9_beta'].asnumpy()
-	# assert False
 
 
 def train():
@@ -52,6 +43,9 @@ def train():
 	net = mx.sym.Activation(data = net, act_type = 'sigmoid')
 	net = mx.sym.Custom(data = net, name = 'softmax', op_type = 'sfmx')
 	# net = mx.sym.LogisticRegressionOutput(data = n.out, name = 'softmax')
+
+	# print net.list_arguments()
+	# assert False
 
 
 	model = mx.model.FeedForward(
@@ -81,25 +75,11 @@ def train():
 		model._init_params(dict(d+l))
 
 
-		# for i in range(10):
-		# 	print '\n', i,\
-		# 	'beta',  model.arg_params['batchnorm%d_beta'% i].asnumpy().mean(), \
-		# 	'gamma', model.arg_params['batchnorm%d_gamma' % i].asnumpy().mean()
-
-		# print 'beta init      ',model.arg_params['batchnorm9_beta'].asnumpy()
-
-
-
 	pred = model.predict(
 		train,
 		num_batch = 4,
 		return_data = True
 	)
-
-	# for i in range(10):
-	# 		print '\n', i
-	# 		print 'beta',  model.arg_params['batchnorm%d_beta'% i].asnumpy().mean()
-	# 		print 'gamma', model.arg_params['batchnorm%d_gamma' % i].asnumpy().mean()
 
 	N = pred[0].shape[0]
 

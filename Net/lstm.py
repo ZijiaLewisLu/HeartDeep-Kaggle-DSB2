@@ -1,11 +1,12 @@
 # pylint:skip-file
-import sys
-sys.path.insert(0, "../../python")
+import sys, time, math
+# sys.path.insert(0, "../../python")
 import mxnet as mx
 import numpy as np
 from collections import namedtuple
-import time
-import math
+import net as n
+import load
+from utils import * 
 LSTMState = namedtuple("LSTMState", ["c", "h"])
 LSTMParam = namedtuple("LSTMParam", ["i2h_weight", "i2h_bias",
                                      "h2h_weight", "h2h_bias"])
@@ -65,10 +66,7 @@ def lstm_unroll(num_lstm_layer, seq_len, input_size,
 
     # embeding layer
     data = mx.sym.Variable('data')
-    label = mx.sym.Variable('softmax_label')
-    embed = mx.sym.Embedding(data=data, input_dim=input_size,
-                             weight=embed_weight, output_dim=num_embed, name='embed')
-    wordvec = mx.sym.SliceChannel(data=embed, num_outputs=seq_len, squeeze_axis=1)
+    # label = mx.sym.Variable('softmax_label')
 
     hidden_all = []
     for seqidx in range(seq_len):
@@ -107,10 +105,9 @@ def lstm_unroll(num_lstm_layer, seq_len, input_size,
     #label = mx.sym.Concat(*label, dim=0)
     #label = mx.sym.Reshape(data=label, target_shape=(0,))
     ################################################################################
+    output = mx.sym.Custom(data = net, name = 'softmax', op_type = 'sfmx')
 
-    sm = mx.sym.SoftmaxOutput(data=pred, label=label, name='softmax')
-
-    return sm
+    return output
 
 def lstm_inference_symbol(num_lstm_layer, input_size,
                           num_hidden, num_embed, num_label, dropout=0.):
