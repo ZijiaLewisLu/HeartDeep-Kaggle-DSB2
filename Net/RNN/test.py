@@ -77,6 +77,15 @@ def test_iou():
     label = mpimg.imread('label.png')
     print img.shape
 
+def test_callback():
+    c = Callback()
+
+    # print c.epoch()
+    print c.eval
+    print c.reset
+    print type(c.epoch), c.epoch,
+    print type(c.batch), c.batch
+
 if __name__ == '__main__':
-    test_iou()
+    test_callback()
     # test_net()

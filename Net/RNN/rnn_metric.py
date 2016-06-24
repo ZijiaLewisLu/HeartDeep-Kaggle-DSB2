@@ -2,6 +2,7 @@ import ipt
 from mxnet.metric import EvalMetric
 import mxnet as mx
 
+
 class RnnM(EvalMetric):
     """Custom evaluation metric that takes a NDArray function.
 
@@ -16,6 +17,7 @@ class RnnM(EvalMetric):
         This is useful in RNN, where the states are also produced
         in outputs for forwarding.
     """
+
     def __init__(self, feval, name=None, allow_extra_outputs=True):
         if name is None:
             name = feval.__name__
@@ -31,8 +33,8 @@ class RnnM(EvalMetric):
 
         # print 'type of label and pred', type(preds), type(labels)
 
-        pred = preds[0] if isinstance(preds,list) else preds
-        label = labels[0] if isinstance(labels,list) else labels
+        pred = preds[0] if isinstance(preds, list) else preds
+        label = labels[0] if isinstance(labels, list) else labels
         # print pred.shape
         # print label.shape
         label = label.asnumpy()
