@@ -5,7 +5,8 @@ from utils import *
 from rnn_feed import Feed
 from rnn_iter import RnnIter
 import matplotlib.pyplot as plt
-from utils import Callback
+# from utils import Callback
+from rnn_metric import RnnM
 
 def rnn(dropout=0.):
     
@@ -54,7 +55,7 @@ def rnn(dropout=0.):
 
     reshape2 = mx.sym.Reshape(data = fc, target_shape = (0,1,256,256))
     
-    if False:
+    if True:
         sgmd = mx.sym.Activation(data = reshape2, act_type = 'sigmoid')
         net = mx.sym.Custom(data = sgmd, name = 'softmax', op_type = 'sfmx')
         # net = mx.sym.MakeLoss(data = net, name='loss')
@@ -65,56 +66,51 @@ def rnn(dropout=0.):
     return group
 
 def contruct_iter():
-    with open('/home/zijia/HeartDeepLearning/DATA/patience/SC-HF-I-1.pk', 'r') as f:
+    import pickle as pk
+    fname = '/home/zijia/HeartDeepLearning/Net/patience/SC-HF-I-1.pk'
+    with open(fname, 'r') as f:
+        img = pk.load(f)
+        ll  = pk.load(f)
+        m   = pk.load(f)
 
-    img, ll, _, _ = load_pk("/home/zijia/HeartDeepLearning/DATA/patience/SC-HF-I-1.pk")
-    print img.shape
+    img = img[:60, None, None, :, :]
+    ll  = ll[:60, None, None, :, :]
+    m = m[:60]
 
-    img = img[:60]
-    img = img.reshape((30,2,1,256,256))
-    ll  = ll[:60]
-    ll  = ll.reshape((30,2,1,256,256))
+    img -= img.mean()
 
-    return RnnIter(img,ll)
+    return RnnIter(img,ll), m
+
 
 if __name__ == '__main__':
 
-
     net = rnn()
 
-    train = contruct_iter()
+    train, marks = contruct_iter()
+    print marks
 
-    # for b in train:
-    #     print b
-
-    # train.reset()
-
-    # for b in train:
-    #     print b
-
-    # assert False
-
-    marks = np.ones((30)).astype('int')
-
-    c = Callback()
+    c = Callback(draw_each = True)
     
     model = Feed(
         net,
         #rnn_hidden
         ctx = mx.context.gpu(0),
-        learning_rate = 1.5,
-        num_epoch = 10
+        learning_rate = 3,
+        num_epoch = 30
         )
 
     model.fit(
         train,
         marks,
-        eval_data = train,
-        e_marks = marks,
-        eval_metric = RnnM(eval_iou),
+        # eval_data = train,
+        # e_marks = marks,
+        eval_metric = RnnM(c.eval),
         epoch_end_callback = c.epoch,
         batch_end_callback = c.batch,
         )
+
+
+    # model.save('12_epoch')
 
     c.all_to_png()
 

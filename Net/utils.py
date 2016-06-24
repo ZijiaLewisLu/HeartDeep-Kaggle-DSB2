@@ -4,7 +4,21 @@ import numpy as np
 import mxnet.ndarray as nd
 import matplotlib.pyplot as plt
 import os, pickle as pk
+from PIL import Image
+import copy
 
+
+def parse_time():
+    now = time.ctime(int(time.time()))
+    now = now.split(' ')
+    return now[2]+'-'+now[3]
+
+def plot_save(img, name):
+    plt.imshow(img)
+    if 'png' not in name:
+        name = name+'.png'
+    plt.savefig(name)
+    plt.close()
 
 
 def eval_iou(label, pred):
@@ -15,8 +29,11 @@ def eval_iou(label, pred):
 
     conjunct = pred * label
     union    = pred + label
-
+    # print conjunct, conjunct.sum()
+    # print union, union.sum()
     out      = np.sum(conjunct*2)/np.sum(union)
+    # print out
+    # assert False
 
     if not 0<=out<=1:
         print 'eval error >>', out, np.sum(conjunct), np.sum(union)
@@ -29,7 +46,9 @@ def _load_pk_file(fname, rate):
         ll  = pk.load(f)
 
     print '-mean'
-    img -= img.mean(axis = 0)
+    print type(img)
+    print img.dtype
+    img -= img.mean(axis = 0).astype('int64')
     # ll  -= ll.mean (axis = 0)
 
     img = img[:,None,:,:]
@@ -133,23 +152,75 @@ def get(bs, small = False, return_raw = False):
 
 class Callback():
 
-    def __init__(self, name = None):
+    def __init__(self, name = None, draw_each = False):
         self.acc_hist = {}
         self.arg  = {}
 
-        if name  == None:
+        if name is None:
             now = time.ctime(int(time.time()))
             now = now.split(' ')
             self.name = now[2]+'-'+now[3]
         else:
             self.name = name
 
+        print self.name
+        self.name = 'Result/' + self.name
+        self.draw_each = draw_each
+
+        os.mkdir(self.name)
+
+        self.count = 0
+        self.epoch = None
+        self.batch = None
+
+    def eval(self, label, pred):
+        pred = copy.deepcopy(pred)
+        conjunct = pred * label
+        union    = pred + label
+
+        out  = np.sum(conjunct*2)/np.sum(union)
+
+        print 'in callback eval', out
+
+
+        if self.draw_each:
+            gap = np.zeros((256,50))
+            gap[:,0]=1
+            gap[:,-1]=1
+            print 'mean of gap',gap.mean()
+            # print gap.shape
+            print 'before',label.mean()
+            label = label*255
+            print 'after', label.mean()
+            Image.fromarray(label[0,0], 'L').save(self.name+'/label%d.png'%(self.count))
+            # png = np.hstack([pred[0,0], gap, label[0,0]])
+            # plot_save(png,self.name+'/mat%d.png' % self.count)
+            Image.fromarray(pred[0,0],'L').save(self.name+'/pred%d-%.5f.png'%(self.count,out))
+
+            
+
+            
+
+        print 'sum of prediciton', pred.mean() , 'truth', label.mean()
+
+        self.count += 1
+        # assert False
+
+        assert self.count!=5
+
+        if not 0<=out<=1:
+            print 'eval error >>', out, np.sum(conjunct), np.sum(union)
+
+        return out
+
     def epoch(self, epoch, symbol, arg_params, aux_params, acc):
         self.acc_hist[epoch] = acc
         self.arg[epoch] = arg_params
+        self.epoch = epoch
         print np.sum(acc),
         print float(len(acc))
         print 'Epoch[%d] Train accuracy: %f' % ( epoch, np.sum(acc)/float(len(acc)) )
+
 
     def batch(self, params):
         """epoch, nbatch, eval_metric, locals """
@@ -171,28 +242,28 @@ class Callback():
 
     def each_to_png(self):
 
-        prefix = os.path.join('Img', self.name)
-        try:
-            os.mkdir(prefix)
-        except Exception ,e:
-            pass
+        # prefix = os.path.join('Img', self.name)
+        # try:
+            # os.mkdir(prefix)
+        # except Exception ,e:
+            # pass
 
         for k in sorted(self.acc_hist.keys()):
             plt.plot(self.acc_hist[k])
-            path = os.path.join(prefix, str(k)+'.png')
+            path = os.path.join(self.name, 'acc_his-'+str(k)+'.png')
             plt.savefig( path )
             plt.close()
 
     def all_to_png(self):
         l = self.get_list()
-        prefix = os.path.join('Img', self.name)
-        try:
-            os.mkdir(prefix)
-        except Exception ,e:
-            pass
+        # prefix = os.path.join('Img', self.name)
+        # try:
+            # os.mkdir(prefix)
+        # except Exception ,e:
+            # pass
 
         plt.plot(l)
-        path = os.path.join(prefix, 'all.png')
+        path = os.path.join(self.name, 'acc_his-all.png')
         plt.savefig( path )
         plt.close()
 
@@ -200,6 +271,7 @@ class Callback():
     def reset(self):
         self.acc_hist = {}
         self.arg      = {}
+        self.count    = 0
 
 
 
@@ -324,43 +396,3 @@ class SfmxProp(mx.operator.CustomOpProp):
         return Sfmx()
 
 #############################################################
-from mxnet.metric import EvalMetric
-class RnnM(EvalMetric):
-    """Custom evaluation metric that takes a NDArray function.
-
-    Parameters
-    ----------
-    feval : callable(label, pred)
-        Customized evaluation function.
-    name : str, optional
-        The name of the metric
-    allow_extra_outputs : bool
-        If true, the prediction outputs can have extra outputs.
-        This is useful in RNN, where the states are also produced
-        in outputs for forwarding.
-    """
-    def __init__(self, feval, name=None, allow_extra_outputs=True):
-        if name is None:
-            name = feval.__name__
-            if name.find('<') != -1:
-                name = 'custom(%s)' % name
-        super(RnnM, self).__init__(name)
-        self._feval = feval
-        self._allow_extra_outputs = allow_extra_outputs
-
-    def update(self, labels, preds):
-        # if not self._allow_extra_outputs:
-        #     check_label_shapes(labels, preds)
-
-        pred, label  = preds[0], labels[0]
-        label = label.asnumpy()
-        pred = pred.asnumpy()
-
-        reval = self._feval(label, pred)
-        if isinstance(reval, tuple):
-            (sum_metric, num_inst) = reval
-            self.sum_metric += sum_metric
-            self.num_inst += num_inst
-        else:
-            self.sum_metric += reval
-            self.num_inst += 1

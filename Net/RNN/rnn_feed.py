@@ -21,17 +21,24 @@ from mxnet.executor_manager import DataParallelExecutorManager, _check_arguments
 from mxnet import ndarray as nd
 from mxnet.model import *
 from mxnet.model import _create_kvstore, _initialize_kvstore, _update_params, _update_params_on_kvstore
+from mxnet.executor_manager import _load_general
+
+from utils import parse_time, plot_save
+
+import matplotlib.pyplot as plt
 
 RNN_HIDDEN = 250
-T = 30
 
 def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
                                     monitor=None,
                                     update_on_kvstore=None,
                                     is_train = False):
-    for t in range(T):
+    
+    for t in range(len(marks)):
         data_batch = data_batch_zoo[t]
         m = marks[t]
+
+        # print 'T>> M>>', t, m
         assert isinstance(m,int), 'Marks Type Error'
 
         executor_manager.load_data_batch(data_batch)
@@ -39,20 +46,28 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
         executor_manager.forward(is_train=is_train)
         # assume only using one gpu
 
-        out = executor_manager.curr_execgrp.train_execs[0].outputs
+        import copy
+        out = copy.deepcopy(executor_manager.curr_execgrp.train_execs[0].outputs)
         c = out[1]
         h = out[2]
+        pred = out[0]
+        if m > 0:
+            plot_save(pred.asnumpy()[0,0], 'whatever.png')
 
-        if is_train:
+        # print type(c), c.asnumpy().mean()
+        # print type(h), h.asnumpy().mean()
+
+        if is_train and m>0:
+            # print 'is_train and m>0', m
             executor_manager.backward()
 
             ######force gradient of bn to be zero
-            for pairs in zip(executor_manager.param_names, executor_manager.grad_arrays):
-                n, g = pairs
-                if 'beta' in n:
-                    g[0] = 0*g[0]
-                # make the gradient of non-label img to be zero
-                g[0] = m*g[0]                        
+            # for i in range(len(executor_manager.param_names)):
+            #     n = executor_manager.param_names[i]
+            #     if 'beta' in n:
+            #         executor_manager.grad_arrays[i][0] = 0*executor_manager.grad_arrays[i][0]
+                # if 'weight' in n:
+                    # executor_manager.grad_arrays[i][0] += 2*executor_manager.param_arrays[i][0]
 
 
             if update_on_kvstore:
@@ -72,12 +87,31 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
 
         if is_train:
             eval_metric.reset()
+
         if m == 1:
+            print 'here'
             executor_manager.update_metric(eval_metric, data_batch.label)
             name_value = eval_metric.get_name_value()
 
             for name, value in name_value:
                 acc_hist.append(value)
+
+
+        if False and m>0:
+            img = data_batch.data[0]
+            ll = data_batch.label[0]
+            pred = out[0]
+            fig = plt.figure()
+
+            o = [pred, img, ll]
+            for num in range(3):
+                fig.add_subplot(131+num).imshow(o[num].asnumpy()[0,0])
+            fig.savefig('Pred/rnn-%d.png' % t)
+            fig.clear()
+            # plt.imshow(pred.asnumpy()[0,0])
+            # plt.savefig('Pred/pred-%d.png' % t)
+            plt.close('all')
+            del fig
 
     return executor_manager, eval_metric, acc_hist
 
@@ -160,7 +194,6 @@ def _train_rnn(
                     monitor.tic()
 
                 # load in C and H
-                from mxnet.executor_manager import _load_general
                 # In future, execgrp should become curr_execgrp!!
                 data_targets = [[ e.arg_dict[name] 
                             for i, e in enumerate(executor_manager.execgrp.train_execs)]
@@ -210,6 +243,8 @@ def _train_rnn(
         logger.info('Epoch[%d] Time cost=%.3f', epoch, (toc - tic))
 
         # print epoch ,'<<<<<<<<<<<<'
+        print 'should print epoch end call back'
+        print epoch_end_callback
         if epoch_end_callback or epoch + 1 == end_epoch:
             executor_manager.copy_to(arg_params, aux_params)
 
@@ -265,7 +300,7 @@ class Feed(FeedForward):
 
     def fit(self, 
         X, 
-        mark, 
+        marks, 
         e_marks=None,
             y=None, eval_data=None, eval_metric='acc',
             epoch_end_callback=None, batch_end_callback=None, kvstore='local', logger=None,
@@ -318,7 +353,7 @@ class Feed(FeedForward):
         # do training
         # print 'before _train_rnn self.arg_params',self.arg_params.keys()
         _train_rnn(self.symbol, self.ctx, 
-            mark,
+            marks,
             arg_names, param_names, aux_names,
                             self.arg_params, self.aux_params,
                             begin_epoch=self.begin_epoch, end_epoch=self.num_epoch,
@@ -332,6 +367,10 @@ class Feed(FeedForward):
                             logger=logger, work_load_list=work_load_list, monitor=monitor,
                             eval_batch_end_callback=eval_batch_end_callback,
                             sym_gen=self.sym_gen, e_marks=e_marks)
+
+
+
+
 
     @staticmethod
     def load(prefix, epoch, ctx=None, **kwargs):
@@ -361,3 +400,26 @@ class Feed(FeedForward):
                   work_load_list=work_load_list,
                   eval_batch_end_callback=eval_batch_end_callback)
         return model
+
+    def simple_pred(self, X):
+        if not isinstance(X, mx.nd.NDArray):
+            X = mx.nd.array(X)
+
+        N = X.shape[0]
+        c = h = mx.nd.zeros((N, self.rnn_hidden))
+
+        data_shapes ={ 'data': X.shape, 'c': (N,self.rnn_hidden), 'h':(N,self.rnn_hidden)}
+
+
+        # for now only use the first device
+        pred_exec = self.symbol.simple_bind(self.ctx[0], grad_req='null', **dict(data_shapes))
+        pred_exec.copy_params_from(self.arg_params, self.aux_params)
+
+
+        _load_general([X], pred_exec.arg_dict['data'])
+        _load_general([c], pred_exec.arg_dict['c'])
+        _load_general([h], pred_exec.arg_dict['h'])
+
+        pred_exec.forward(is_train=False)
+
+        return pred_exec.outputs
