@@ -65,7 +65,9 @@ def rnn(dropout=0.):
     return group
 
 def contruct_iter():
-    img, ll, _, _ = load_pk("/home/zijia/HeartDeepLearning/Net/data/o1.pk")
+    with open('/home/zijia/HeartDeepLearning/DATA/patience/SC-HF-I-1.pk', 'r') as f:
+
+    img, ll, _, _ = load_pk("/home/zijia/HeartDeepLearning/DATA/patience/SC-HF-I-1.pk")
     print img.shape
 
     img = img[:60]
