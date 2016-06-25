@@ -196,19 +196,20 @@ class Callback():
         logging.debug('EVAL, mean of prediciton %f, truth %f, iou %f' %
                       (pred.mean(), label.mean(), out))
 
-        import scipy.misc as sm
-        import cv2
+        
         if self.draw_each:
+            import scipy.misc as sm
+            import cv2
             gap = np.ones((256, 5))
             pic = np.hstack([pred[0, 0], gap, label[0, 0]])
-            print pic.shape
+            # print pic.shape
             with open(self.path + 'pk-%d.pk' % self.count, 'w') as f:
                 pk.dump(pred, f)
                 pk.dump(label, f)
             plt.imsave(self.path + 'plt-%d.png' % (self.count), pic)
             plt.close('all')
             cv2.imwrite(self.path + 'cv2-%d.png' % (self.count), pic * 255)
-            sm.imsave(self.path + 'sm-%d.png' % (self.count), pic * 255)
+            sm.imsave(self.path + '1=.amst-%d.png' % (self.count), pic * 255)
 
         self.count += 1
 
@@ -225,9 +226,17 @@ class Callback():
         for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].param_arrays):
             n, p = pairs
             if 'beta' in n:
+                # print 'in batch', n , p[0].asnumpy().mean()
                 shape = p[0].shape
                 conttx = p[0].context
                 p[0] = mx.ndarray.zeros(shape, ctx=conttx)
+            if 'weight' in n:
+                print '~~~parm',n, p[0].asnumpy().mean()
+        # for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].grad_arrays):
+            # n, p = pairs
+            # if 'weight' in n:
+                # print '~~~grad',n, p[0].asnumpy().mean()
+
 
     def get_dict(self):
         return self.acc_hist
@@ -240,26 +249,14 @@ class Callback():
 
     def each_to_png(self):
 
-        # prefix = os.path.join('Img', self.name)
-        # try:
-            # os.mkdir(prefix)
-        # except Exception ,e:
-            # pass
-
         for k in sorted(self.acc_hist.keys()):
             plt.plot(self.acc_hist[k])
-            path = os.path.join(self.name, 'acc_his-' + str(k) + '.png')
+            path = os.path.join(self.path, 'acc_his-' + str(k) + '.png')
             plt.savefig(path)
             plt.close()
 
     def all_to_png(self):
         l = self.get_list()
-        # prefix = os.path.join('Img', self.name)
-        # try:
-        # os.mkdir(prefix)
-        # except Exception ,e:
-        # pass
-
         plt.plot(l)
         path = os.path.join(self.name, 'acc_his-all.png')
         plt.savefig(path)

@@ -66,11 +66,20 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
                                           executor_manager.grad_arrays,
                                           kvstore)
             else:
+                logging.info('updateing weight...')
+                print '-----------before update grad check-------------'
+                for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
+                    print pari[0], pari[1][0].asnumpy().mean()
+                print '----------------------------------------------'
                 _update_params(executor_manager.param_arrays,
                                executor_manager.grad_arrays,
                                updater=updater,
                                num_device=len(ctx),
                                kvstore=kvstore)
+                logging.info('done update')
+
+                # for i in executor_manager.param_arrays:
+                #     print 'after check', i[0].asnumpy().mean()
 
         if monitor is not None:
             monitor.toc_print()
@@ -107,6 +116,7 @@ def _train_rnn(
     """Mark should be a list of #SeriesLength, annotating if image has label by 1 , 0"""
     # TODO check mark shape
     # TODO marks not working if label of SAX is different in one batch
+    print '>>>>>>run_rnn', optimizer
 
 
     if logger is None:
@@ -182,6 +192,8 @@ def _train_rnn(
                     is_train=True,
                 )
 
+
+
                 nbatch += 1
                 # batch callback (for print purpose)
                 if batch_end_callback != None:
@@ -194,6 +206,7 @@ def _train_rnn(
                             call(batch_end_params)
                     else:
                         batch_end_callback(batch_end_params)
+
 
                 # this epoch is done possibly earlier
                 if epoch_size is not None and nbatch >= epoch_size:
