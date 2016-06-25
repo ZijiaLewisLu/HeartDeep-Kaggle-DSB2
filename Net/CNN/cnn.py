@@ -21,7 +21,7 @@ def batch_end(params):
 def train():
     out = get(
         1,
-        small=True
+        # small=True
     )
 
     train = out['train']
@@ -39,7 +39,7 @@ def train():
         net,
         ctx=mx.context.gpu(1),
         learning_rate=4,
-        num_epoch=10,
+        num_epoch=50,
         optimizer='adam',
         initializer=mx.initializer.Xavier(rnd_type='gaussian')
     )

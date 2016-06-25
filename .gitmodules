@@ -1,0 +1,3 @@
+[submodule "Net/heart_dataset"]
+	path = Net/heart_dataset
+	url = git@github.com:VoVAllen/heart_dataset.git
