@@ -36,7 +36,10 @@ class RnnIter(DataIter):
     @property
     def provide_data(self):
         """The name and shape of data provided by this iterator"""
-        return [(k, tuple([self.batch_size] + list(v.shape[2:]))) for k, v in self.data]
+        lst = [(k, tuple([self.batch_size] + list(v.shape[2:]))) for k, v in self.data]
+        lst.append(('c',(self.batch_size, 250)))
+        lst.append(('h',(self.batch_size, 250)))
+        return lst
 
     @property
     def provide_label(self):

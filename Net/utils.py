@@ -169,7 +169,7 @@ class Callback():
         else:
             self.name = name
 
-        print self.name
+        logging.info(self.name)
         self.path = 'Result/' + self.name + '/'
         self.draw_each = draw_each
 
@@ -183,9 +183,8 @@ class Callback():
         self.acc_hist[epoch] = acc
         self.arg[epoch] = arg_params
         self.epoch_num = epoch
-        print np.sum(acc),
-        print float(len(acc))
-        print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) / float(len(acc)))
+        # print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) / float(len(acc)))
+        logging.info('Epoch[%d] Train accuracy: %f' , epoch, (np.sum(acc) / float(len(acc))))
 
     def eval(self, label, pred):
         pred = copy.deepcopy(pred)
@@ -198,8 +197,8 @@ class Callback():
 
         
         if self.draw_each:
-            import scipy.misc as sm
-            import cv2
+            # import scipy.misc as sm
+            # import cv2
             gap = np.ones((256, 5))
             pic = np.hstack([pred[0, 0], gap, label[0, 0]])
             # print pic.shape
@@ -208,12 +207,12 @@ class Callback():
                 pk.dump(label, f)
             plt.imsave(self.path + 'plt-%d.png' % (self.count), pic)
             plt.close('all')
-            cv2.imwrite(self.path + 'cv2-%d.png' % (self.count), pic * 255)
-            sm.imsave(self.path + '1=.amst-%d.png' % (self.count), pic * 255)
+            # cv2.imwrite(self.path + 'cv2-%d.png' % (self.count), pic * 255)
+            # sm.imsave(self.path + 'sicpy-%d.png' % (self.count), pic * 255)
 
         self.count += 1
 
-        assert self.count != 5
+        # assert self.count != 5
 
         if not 0 <= out <= 1:
             logging.warning('eval error >>%f %f %f' %
@@ -231,11 +230,7 @@ class Callback():
                 conttx = p[0].context
                 p[0] = mx.ndarray.zeros(shape, ctx=conttx)
             if 'weight' in n:
-                print '~~~parm',n, p[0].asnumpy().mean()
-        # for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].grad_arrays):
-            # n, p = pairs
-            # if 'weight' in n:
-                # print '~~~grad',n, p[0].asnumpy().mean()
+                logging.debug('[BATCH Parm %s]> %f',n, p[0].asnumpy().mean())
 
 
     def get_dict(self):
@@ -258,7 +253,7 @@ class Callback():
     def all_to_png(self):
         l = self.get_list()
         plt.plot(l)
-        path = os.path.join(self.name, 'acc_his-all.png')
+        path = os.path.join(self.path, 'acc_his-all.png')
         plt.savefig(path)
         plt.close()
 

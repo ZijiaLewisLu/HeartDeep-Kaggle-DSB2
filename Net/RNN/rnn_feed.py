@@ -66,17 +66,17 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
                                           executor_manager.grad_arrays,
                                           kvstore)
             else:
-                logging.info('updateing weight...')
-                print '-----------before update grad check-------------'
+                logging.debug('Updateing weight...')
+                logging.debug('--------before update | grad check-------------')
                 for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
-                    print pari[0], pari[1][0].asnumpy().mean()
-                print '----------------------------------------------'
+                    logging.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
+
                 _update_params(executor_manager.param_arrays,
                                executor_manager.grad_arrays,
                                updater=updater,
                                num_device=len(ctx),
                                kvstore=kvstore)
-                logging.info('done update')
+                logging.debug('Done update')
 
                 # for i in executor_manager.param_arrays:
                 #     print 'after check', i[0].asnumpy().mean()
@@ -214,9 +214,9 @@ def _train_rnn(
                     break
 
             if do_reset is True:
-                logger.info('Epoch[%d] Resetting Data Iterator', epoch)
+                logger.debug('Epoch[%d] Resetting Data Iterator', epoch)
                 train_data.reset()
-                logger.info('Epoch[%d] Resetting Eval Metric', epoch)
+                logger.debug('Epoch[%d] Resetting Eval Metric', epoch)
                 eval_metric.reset()
 
             # this epoch is done
@@ -300,7 +300,7 @@ class Feed(FeedForward):
         # fixed
         N = data.batch_size
         param_dict = dict(data.provide_data + data.provide_label)
-        param_dict['c'] = param_dict['h'] = (N, self.rnn_hidden)
+        # param_dict['c'] = param_dict['h'] = (N, self.rnn_hidden)
 
         arg_names, param_names, aux_names = self._init_params(param_dict)
 
