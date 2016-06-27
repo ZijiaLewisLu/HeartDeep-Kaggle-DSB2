@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     net = rnn()
     train, marks = contruct_iter()
-    logging.debug(m)
+    logging.debug(marks)
 
     c = Callback(draw_each=True)
     logging.info(c.name)

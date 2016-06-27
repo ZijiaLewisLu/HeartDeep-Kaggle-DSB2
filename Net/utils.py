@@ -11,6 +11,40 @@ import pickle as pk
 from PIL import Image
 import copy
 
+def predict_test(model, val, perfix):
+    out = model.predict(
+            val,
+            # num_batch=4,
+            return_data=True
+        )
+
+
+    if perfix is None:
+        perfix = parse_time()
+    try:
+        os.mkdir(perfix)
+    except OSError, e:
+        print e, 'ecountered'
+
+    N = out[0].shape[0]
+
+    for idx in range(N):
+        gap = np.ones((256,5))
+        pred= out[0][idx,0]
+        img = out[1][idx,0]
+        label = out[2][idx,0]
+        png = np.hstack([pred,gap,label])
+        
+        logging.debug('Pred mean>>',pred.mean(), 'std>>',pred.std())
+
+        fig = plt.figure()
+        fig.add_subplot(121).imshow(png)
+        fig.add_subplot(122).imshow(img)
+        fig.savefig(perfix+'Pred%d.png'%(idx))
+        fig.clear()
+        plt.close('all')
+
+
 
 def parse_time():
     now = time.ctime(int(time.time()))
@@ -156,111 +190,6 @@ def get(bs, small=False, return_raw=False):
     return load(f, bs=bs, return_raw=return_raw)
 
 
-class Callback():
-
-    def __init__(self, name=None, draw_each=False):
-        self.acc_hist = {}
-        self.arg = {}
-
-        if name is None:
-            now = time.ctime(int(time.time()))
-            now = now.split(' ')
-            self.name = now[2] + '-' + now[3]
-        else:
-            self.name = name
-
-        logging.info(self.name)
-        self.path = 'Result/' + self.name + '/'
-        self.draw_each = draw_each
-
-        os.mkdir(self.path)
-
-        self.count = 0
-        self.epoch_num = None
-        self.batch_num = None
-
-    def epoch(self, epoch, symbol, arg_params, aux_params, acc):
-        self.acc_hist[epoch] = acc
-        self.arg[epoch] = arg_params
-        self.epoch_num = epoch
-        # print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) / float(len(acc)))
-        logging.info('Epoch[%d] Train accuracy: %f' , epoch, (np.sum(acc) / float(len(acc))))
-
-    def eval(self, label, pred):
-        pred = copy.deepcopy(pred)
-        conjunct = pred * label
-        union = pred + label
-
-        out = np.sum(conjunct * 2) / np.sum(union)
-        logging.debug('EVAL, mean of prediciton %f, truth %f, iou %f' %
-                      (pred.mean(), label.mean(), out))
-
-        
-        if self.draw_each:
-            # import scipy.misc as sm
-            # import cv2
-            gap = np.ones((256, 5))
-            pic = np.hstack([pred[0, 0], gap, label[0, 0]])
-            # print pic.shape
-            with open(self.path + 'pk-%d.pk' % self.count, 'w') as f:
-                pk.dump(pred, f)
-                pk.dump(label, f)
-            plt.imsave(self.path + 'plt-%d.png' % (self.count), pic)
-            plt.close('all')
-            # cv2.imwrite(self.path + 'cv2-%d.png' % (self.count), pic * 255)
-            # sm.imsave(self.path + 'sicpy-%d.png' % (self.count), pic * 255)
-
-        self.count += 1
-
-        # assert self.count != 5
-
-        if not 0 <= out <= 1:
-            logging.warning('eval error >>%f %f %f' %
-                            (out, np.sum(conjunct), np.sum(union)))
-
-        return out
-
-    def batch(self, params):
-        """epoch, nbatch, eval_metric, locals """
-        for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].param_arrays):
-            n, p = pairs
-            if 'beta' in n:
-                # print 'in batch', n , p[0].asnumpy().mean()
-                shape = p[0].shape
-                conttx = p[0].context
-                p[0] = mx.ndarray.zeros(shape, ctx=conttx)
-            if 'weight' in n:
-                logging.debug('[BATCH Parm %s]> %f',n, p[0].asnumpy().mean())
-
-
-    def get_dict(self):
-        return self.acc_hist
-
-    def get_list(self):
-        l = []
-        for k in sorted(self.acc_hist.keys()):
-            l += self.acc_hist[k]
-        return l
-
-    def each_to_png(self):
-
-        for k in sorted(self.acc_hist.keys()):
-            plt.plot(self.acc_hist[k])
-            path = os.path.join(self.path, 'acc_his-' + str(k) + '.png')
-            plt.savefig(path)
-            plt.close()
-
-    def all_to_png(self):
-        l = self.get_list()
-        plt.plot(l)
-        path = os.path.join(self.path, 'acc_his-all.png')
-        plt.savefig(path)
-        plt.close()
-
-    def reset(self):
-        self.acc_hist = {}
-        self.arg = {}
-        self.count = 0
 
 
 ####################################################
