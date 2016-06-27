@@ -86,6 +86,12 @@ def test_callback():
     print type(c.epoch), c.epoch,
     print type(c.batch), c.batch
 
+
+def test_iii():
+    rootdir = '/home/zijia/HeartDeepLearning/Net/RNN/Result/24-23:25:29'
+    
+
+    
 if __name__ == '__main__':
     test_callback()
     # test_net()

@@ -8,6 +8,8 @@
 *gif
 *sublime*
 12_*
+*json
+*params
 
 !kaggle_tutorial
 !kaggle-ndsb2
@@ -22,4 +24,3 @@ caffe_FCN/
 .ipynb_checkpoints/
 kaggle_tutorial/iou_mac
 dataset
-Net/Img/*

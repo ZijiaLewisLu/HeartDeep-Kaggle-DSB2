@@ -37,6 +37,8 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
              update_on_kvstore=None,
              is_train=False):
 
+    N = data_batch_zoo[0].data[0].shape[0]
+    c = h = mx.nd.zeros((N, RNN_HIDDEN))
     for t in range(len(marks)):
         m = marks[t]
         logging.debug('Time Step %d M %d', t, m)
@@ -44,12 +46,17 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
 
         assert isinstance(m, int), 'Marks Type Error'
 
+        #load in data
         executor_manager.load_data_batch(data_batch)
+        data_targets = [[e.arg_dict[name] for i, e in enumerate(executor_manager.curr_execgrp.train_execs)]
+                                                for name in ['c', 'h']]
+        _load_general([c], data_targets[0])
+        _load_general([h], data_targets[1])
 
         executor_manager.forward(is_train=is_train)
-        # assume only using one gpu
 
-        import copy
+
+        # assume only using one gpu
         out = executor_manager.curr_execgrp.train_execs[0].outputs
         c = out[1]
         h = out[2]
@@ -61,16 +68,29 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
             # print 'is_train and m>0', m
             executor_manager.backward()
 
+            logging.debug('Updateing weight...')
+            logging.debug('--------before update | grad check-------------')
+            for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
+                logging.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
+            
+            
             if update_on_kvstore:
                 _update_params_on_kvstore(executor_manager.param_arrays,
                                           executor_manager.grad_arrays,
                                           kvstore)
             else:
+
                 _update_params(executor_manager.param_arrays,
                                executor_manager.grad_arrays,
                                updater=updater,
                                num_device=len(ctx),
                                kvstore=kvstore)
+            
+            
+            logging.debug('Done update')
+
+                # for i in executor_manager.param_arrays:
+                #     print 'after check', i[0].asnumpy().mean()
 
         if monitor is not None:
             monitor.toc_print()
@@ -107,6 +127,7 @@ def _train_rnn(
     """Mark should be a list of #SeriesLength, annotating if image has label by 1 , 0"""
     # TODO check mark shape
     # TODO marks not working if label of SAX is different in one batch
+    print '>>>>>>run_rnn', optimizer
 
 
     if logger is None:
@@ -143,8 +164,6 @@ def _train_rnn(
     # Now start training
     train_data.reset()
 
-    N = train_data.batch_size
-    c = h = mx.nd.zeros((N, RNN_HIDDEN))
 
     for epoch in range(begin_epoch, end_epoch):
         # Training phase
@@ -166,13 +185,14 @@ def _train_rnn(
                 if monitor is not None:
                     monitor.tic()
 
+
                 # load in C and H
                 # In future, execgrp should become curr_execgrp!!
-                data_targets = [[e.arg_dict[name]
-                                 for i, e in enumerate(executor_manager.execgrp.train_execs)]
-                                for name in ['c', 'h']]
-                _load_general([c], data_targets[0])
-                _load_general([h], data_targets[1])
+                # data_targets = [[e.arg_dict[name]
+                #                  for i, e in enumerate(executor_manager.execgrp.train_execs)]
+                #                 for name in ['c', 'h']]
+                # _load_general([c], data_targets[0])
+                # _load_general([h], data_targets[1])
 
                 # Start to iter on Time steps
                 executor_manager, eval_metric, acc_hist = _run_sax(
@@ -181,6 +201,8 @@ def _train_rnn(
                     update_on_kvstore=update_on_kvstore,
                     is_train=True,
                 )
+
+
 
                 nbatch += 1
                 # batch callback (for print purpose)
@@ -195,15 +217,16 @@ def _train_rnn(
                     else:
                         batch_end_callback(batch_end_params)
 
+
                 # this epoch is done possibly earlier
                 if epoch_size is not None and nbatch >= epoch_size:
                     do_reset = False
                     break
 
             if do_reset is True:
-                logger.info('Epoch[%d] Resetting Data Iterator', epoch)
+                logger.debug('Epoch[%d] Resetting Data Iterator', epoch)
                 train_data.reset()
-                logger.info('Epoch[%d] Resetting Eval Metric', epoch)
+                logger.debug('Epoch[%d] Resetting Eval Metric', epoch)
                 eval_metric.reset()
 
             # this epoch is done
@@ -287,7 +310,7 @@ class Feed(FeedForward):
         # fixed
         N = data.batch_size
         param_dict = dict(data.provide_data + data.provide_label)
-        param_dict['c'] = param_dict['h'] = (N, self.rnn_hidden)
+        # param_dict['c'] = param_dict['h'] = (N, self.rnn_hidden)
 
         arg_names, param_names, aux_names = self._init_params(param_dict)
 
@@ -347,7 +370,9 @@ class Feed(FeedForward):
                     **kwargs)
 
     @staticmethod
-    def create(symbol, X, y=None, ctx=None,
+    def create(symbol, X, marks,
+               e_marks=None,
+               y=None, ctx=None,
                num_epoch=None, epoch_size=None, optimizer='sgd', initializer=Uniform(0.01),
                eval_data=None, eval_metric='acc',
                epoch_end_callback=None, batch_end_callback=None,
@@ -357,7 +382,7 @@ class Feed(FeedForward):
         model = Feed(symbol, ctx=ctx, num_epoch=num_epoch,
                      epoch_size=epoch_size,
                      optimizer=optimizer, initializer=initializer, **kwargs)
-        model.fit(X, y, eval_data=eval_data, eval_metric=eval_metric,
+        model.fit(X, y, marks, e_marks=e_marks, eval_data=eval_data, eval_metric=eval_metric,
                   epoch_end_callback=epoch_end_callback,
                   batch_end_callback=batch_end_callback,
                   kvstore=kvstore,
