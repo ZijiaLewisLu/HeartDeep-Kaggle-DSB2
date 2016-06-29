@@ -40,10 +40,26 @@
 	"buffers":
 	[
 		{
-			"file": "rnn.py",
+			"file": "CNN/cnn.py",
 			"settings":
 			{
-				"buffer_size": 3178,
+				"buffer_size": 2774,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "utils.py",
+			"settings":
+			{
+				"buffer_size": 7434,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "RNN/rnn.py",
+			"settings":
+			{
+				"buffer_size": 3218,
 				"line_ending": "Unix"
 			}
 		}
@@ -114,12 +130,12 @@
 	"expanded_folders":
 	[
 		"/home/zijia/HeartDeepLearning",
-		"/home/zijia/HeartDeepLearning/DATA",
-		"/home/zijia/HeartDeepLearning/DATA/patience",
-		"/home/zijia/HeartDeepLearning/Net"
+		"/home/zijia/HeartDeepLearning/Net",
+		"/home/zijia/HeartDeepLearning/Net/RNN"
 	],
 	"file_history":
 	[
+		"/home/zijia/HeartDeepLearning/Net/rnn.py",
 		"/home/zijia/.config/sublime-text-3/Packages/User/Anaconda.sublime-settings",
 		"/home/zijia/.config/sublime-text-3/Packages/User/python.sublime-build",
 		"/home/zijia/.config/sublime-text-3/Packages/Anaconda/Anaconda.sublime-settings",
@@ -175,24 +191,53 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "rnn.py",
+					"file": "CNN/cnn.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3178,
+						"buffer_size": 2774,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								180,
-								180
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 399.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "utils.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7434,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1086,
+								1086
 							]
 						],
 						"settings":
@@ -201,11 +246,41 @@
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": -0.0,
-						"translation.y": 0.0,
+						"translation.x": 0.0,
+						"translation.y": 627.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "RNN/rnn.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3218,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2496,
+								2496
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
