@@ -13,15 +13,17 @@ import copy
 import json
 import RNN
 import CNN
-from utils import *
+from my_utils import *
 
 
 class Solver():
 
     def __init__(self, net, train_data, **kwargs):
-        
+
         k = kwargs.copy()
         self.net = net
+
+        # prepare Train_data
         self.train_data = train_data
         if isinstance(train_data, mx.io.DataIter):
             self.batch_size = train_data.batch_size
@@ -30,6 +32,7 @@ class Solver():
                 'numpy_batch_size', min(train_data.shape[0], 128))
             k['numpy_batch_size'] = self.batch_size
 
+        # init params
         self.num_epoch = k['num_epoch']
         self.acc_hist = {}
         self.arg = {}
@@ -37,16 +40,15 @@ class Solver():
         self.best_param = None
         self.nbatch = -1
         self.nepoch = -1
-        self.count  = 0
+        self.count = 0
 
-        self.block_bn = k.pop('block_bn', False)
-        # draw outputs of every forwards
+        self.block_bn = k.pop('block_bn', False)    # whether draw outputs of every forward step
         self.draw_each = k.pop('draw_each', False)
-        # save prediction to pk files
-        self.save_pred = k.pop('save_pred', False)
+        self.save_pred = k.pop('save_pred', False)  # whether save prediction to pk files
         self.save_best = k.pop('save_best', True)
         self.is_rnn = k.pop('is_rnn', False)
 
+        # make name and save_dir
         now = time.ctime(int(time.time()))
         now = now.split(' ')
         name = k.pop('name', None)
@@ -59,7 +61,8 @@ class Solver():
             os.mkdir(self.path)
         except OSError, e:
             print e, 'ecountered'
-        
+
+        #config logging
         logging.basicConfig(format='%(levelname)s:%(message)s')
         if k.pop('save_log', True):
             logging.basicConfig(filename='log.txt')
@@ -71,13 +74,20 @@ class Solver():
 
         logging.info(self.name)
 
+        # save kwargs to file
+        save_k = kwargs.copy()
         with open(self.path + "SolverParam.json", 'w') as f:
-            kwargs.pop('eval_data')
-            kwargs.pop('ctx')
-            kwargs.pop('initializer')
+            save_k.pop('eval_data')
+            ctx = save_k['ctx'] 
+            ctx = [ctx] if not isinstance(ctx, list) else ctx
+            save_k['ctx'] = ctx.__str__()
+            save_k.pop('initializer')
+            
             json.dump(kwargs, f)
 
+        # store kwargs
         self.kwargs = k
+        self.origin_k = kwargs
 
     def reset(self):
         self.acc_hist = {}
@@ -142,7 +152,8 @@ class Solver():
 
     def eval_batch(self, params):
         local = params[3]
-        preds = local['executor_manager'].curr_execgrp.train_execs[0].outputs[0]
+        preds = local['executor_manager'].curr_execgrp.train_execs[
+            0].outputs[0]
         labels = local['eval_batch'].label[0]
         self._draw_together(
             preds, labels, 'EVAL[E%d-B%d]' % (params[0], params[1]))
@@ -199,12 +210,13 @@ class Solver():
         else:
             self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
-        if self.kwargs.pop('load',False):
+        if self.kwargs.pop('load', False):
             perfix = self.kwargs['load_perfix']
             epoch = self.kwargs['load_epoch']
             raise NotImplemented('Load is not supported')
 
     def train(self):
+
         kwords = {
             'kvstore': 'local',
             'eval_metric': self.eval,
@@ -215,7 +227,7 @@ class Solver():
 
         for term in ['y', 'eval_data', 'logger', 'work_load_list', 'monitor']:
             if term in self.kwargs.keys():
-                kwords[term] = self.kwargs.pop(term) 
+                kwords[term] = self.kwargs.pop(term)
 
         self._init_model()
 
@@ -225,3 +237,26 @@ class Solver():
             self.model.fit(self.train_data, marks, **kwords)
         else:
             self.model.fit(self.train_data, **kwords)
+
+    def predict(self):
+        if 'eval_data' in self.origin_k.keys():
+            X = self.origin_k['eval_data']
+        else:
+            X = self.train_data
+            logging.warning('No Eval Data, Using Training Data')
+
+        out = self.model.predict(X, return_data=True)
+
+        N = out[0].shape[0]
+
+        for idx in range(N):
+            gap = np.ones((256, 5))
+            pred = out[0][idx, 0]
+            img = out[1][idx, 0]
+            label = out[2][idx, 0]
+            png = np.hstack([img, gap, pred, gap, label])
+
+            logging.debug('Pred mean>>', pred.mean(), 'std>>', pred.std())
+
+            plt.imsave(png, self.path + 'Prediction[%d].png' % idx)
+            plt.close('all')

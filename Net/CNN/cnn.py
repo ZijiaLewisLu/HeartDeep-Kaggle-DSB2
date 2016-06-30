@@ -1,22 +1,10 @@
 import ipt, logging
 import mxnet as mx
 import net as n
-from utils import *
+from my_utils import *
 
 import os
 # os.environ['MXNET_ENGINE_TYPE'] = 'NaiveEngine'
-
-
-def batch_end(params):
-    """epoch, nbatch, eval_metric, locals """
-
-    for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].param_arrays):
-        n, p = pairs
-        if 'beta' in n:
-            shape = p[0].shape
-            conttx = p[0].context
-            p[0] = mx.ndarray.zeros(shape, ctx=conttx)
-
 
 def cnn_net():
 	net = mx.sym.Reshape(data = n.bn10, target_shape = (0, 1*256*256))
@@ -28,11 +16,12 @@ def cnn_net():
 	net = mx.sym.LogisticRegressionOutput(data = net, name = 'softmax')
 	return net
 
+
 def train():
-    out = get(
-        6,
-        # small=True
-    )
+
+    out = get( 6
+        #small=True
+        )
 
     train = out['train']
     val = out['val']
@@ -42,7 +31,7 @@ def train():
         net,
         ctx=[mx.context.gpu(1), mx.context.gpu(0),mx.context.gpu(2)],
         learning_rate=6,
-        num_epoch=200,
+        num_epoch=100,
         optimizer='adam',
         initializer=mx.initializer.Xavier(rnd_type='gaussian')
     )
@@ -108,4 +97,6 @@ def train():
     return c_train
 
 if __name__ == '__main__':
+
+
 	c = train()

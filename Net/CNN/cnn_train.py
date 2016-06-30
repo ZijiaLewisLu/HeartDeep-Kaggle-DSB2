@@ -1,7 +1,7 @@
 import ipt, logging
 import mxnet as mx
 from cnn import cnn_net
-from utils import *
+from my_utils import *
 from solver import Solver
 import os
 
@@ -19,24 +19,24 @@ PARAMS={
 
 
 
-def main():
+def main(param = PARAMS):
+
     logging.basicConfig(level=logging.INFO)
     out = get(
         6,
-        small = True
+        #small = True
     )
+    
     net = cnn_net()
 
-    PARAMS['eval_data'] = out['val']
-    PARAMS['name'] = 'Test'
-    # PARAMS['save_log'] = False 
-
+    param['eval_data'] = out['val'] 
+    param['num_epoch'] = 50
  
-    s = Solver(net, out['train'], **PARAMS)
+    s = Solver(net, out['train'], **param)
     s.train()
     s.all_to_png()
     s.save_best_model()
-
+    s.predict()
 
 if __name__ == '__main__':
     main()
