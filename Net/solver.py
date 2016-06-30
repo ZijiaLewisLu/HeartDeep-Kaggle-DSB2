@@ -19,8 +19,8 @@ from my_utils import *
 
 class Solver():
 
-    def __init__(self, net, train_data, **kwargs):
-
+    def __init__(self, net, train_data, sks, **kwargs):
+        """sks is the dict of config of solver whereas other args and kwargs will be passed into net""" 
         k = kwargs.copy()
         self.net = net
 
@@ -37,14 +37,16 @@ class Solver():
         self.num_epoch = k['num_epoch']
         self.reset()
 
+        sks_bk = sks.copy()
+        self.sks = sks
         # whether draw outputs of every forward step
-        self.block_bn = k.pop('block_bn', False)
-        self.draw_each = k.pop('draw_each', False)
+        # self.block_bn = k.pop('block_bn', False)
+        # self.draw_each = k.pop('draw_each', False)
         # whether save prediction to pk files
-        self.save_pred = k.pop('save_pred', False)
-        self.save_best = k.pop('save_best', True)
-        self.is_rnn = k.pop('is_rnn', False)
-        self.lgr    = k.pop('logger', None)
+        # self.save_pred = k.pop('save_pred', False)
+        # self.save_best = k.pop('save_best', True)
+        self.is_rnn = self.sks.pop('is_rnn', False)
+        self.lgr    = self.sks.pop('logger', None)
 
         # make name and save_dir
         now = time.ctime(int(time.time()))
@@ -78,7 +80,8 @@ class Solver():
             save_k.pop('initializer', None)
             save_k.pop('logger', None)
 
-            json.dump(save_k, f)
+            json.dump(sks_bk, f, indent=4, sort_keys=True)
+            json.dump(save_k, f, indent=4, sort_keys=True)
 
         # store kwargs
         self.kwargs = k
@@ -127,14 +130,14 @@ class Solver():
         union = pred + label
 
         out = np.sum(conjunct * 2) / np.sum(union)
-        self.lgr.debug('EVAL, mean of prediciton %f, truth %f, iou %f' %
+        self.lgr.debug('-------------------------EVAL, mean of prediciton %f, truth %f, iou %f----------------------' %
                        (pred.mean(), label.mean(), out))
 
-        if self.draw_each:
+        if self.sks.pop('draw_each', False):
             self._draw_together(
-                pred, label, 'IOU[E%d-B%d]-#%d' % (self.nepoch, self.nbatch, self.count))
+                pred, label, 'Evaluation[E%d-B%d]-#%d' % (self.nepoch, self.nbatch, self.count))
 
-        if self.save_pred:
+        if self.sks.pop('save_pred', False):
             with open(self.path + 'pk[E%d-B%d]-#%d.pk' % (self.nepoch, self.nbatch, self.count), 'w') as f:
                 pk.dump(pred, f)
                 pk.dump(label, f)
@@ -167,7 +170,7 @@ class Solver():
             # operation for param
             for p in ps:
                 # if necessary, fix beta in batch norm
-                if 'beta' in n and self.block_bn:
+                if 'beta' in n and self.sks.pop('block_bn', False):
                     p = 0*p
                 
                 if psum is None:
@@ -210,7 +213,7 @@ class Solver():
         this_acc = np.sum(acc) / float(len(acc))
         self.lgr.info('Epoch[%d] Train accuracy: %f', epoch, this_acc)
 
-        if self.save_best and \
+        if self.sks.pop('save_best',True) and \
                 (self.best_param is None or this_acc > self.best_acc):
             self.best_param = (epoch, symbol, arg_params, aux_params)
             self.best_acc = this_acc
@@ -233,8 +236,8 @@ class Solver():
             mean_param = [ x.mean() for x in param ]
             mean_grad  = [ x.mean() for x in grad]
 
-            fig.add_subplot(1,2,1).plot(mean_param)
-            fig.add_subplot(1,2,2).plot(mean_grad)
+            fig.add_subplot(1,2,1).plot(mean_param, marker='o')
+            fig.add_subplot(1,2,2).plot(mean_grad,  marker='o')
             fig.suptitle(n+' Param:Grad')
 
             fig.savefig(path+n+'.png')
@@ -258,7 +261,7 @@ class Solver():
 
     def each_to_png(self):
         for k in sorted(self.acc_hist.keys()):
-            plt.plot(self.acc_hist[k])
+            plt.plot(self.acc_hist[k], marker='o')
             path = os.path.join(self.path, 'acc_his-' + str(k) + '.png')
             plt.savefig(path)
             plt.close()
@@ -269,7 +272,7 @@ class Solver():
             average = np.mean(self.acc_hist[k])
             l.append(k)
 
-        plt.plot(l)
+        plt.plot(l, marker='o')
         path = os.path.join(self.path, 'acc_his-all.png')
         plt.savefig(path)
         plt.close()
