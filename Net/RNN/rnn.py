@@ -81,7 +81,7 @@ def contruct_iter():
     ll = ll[:60, None, None, :, :]
     m = m[:60]
 
-    img -= img.mean()
+    img -= img.mean().astype('int64')
 
     return RnnIter(img, ll), m
 
