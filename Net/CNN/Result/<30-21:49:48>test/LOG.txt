@@ -1,0 +1,4 @@
+INFO:<30-21:49:48>test
+INFO:Auto-select kvstore type = local_update_cpu
+INFO:Start training with [gpu(1), gpu(0)]
+DEBUG:EVAL, mean of prediciton 0.499960, truth 0.026454, iou 0.050093

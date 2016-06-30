@@ -85,7 +85,7 @@ def _load_pk_file(fname, rate):
         img = pk.load(f)
         ll = pk.load(f)
 
-    print '-mean'
+    #print '-mean'
     img -= img.mean(axis=0)
     # ll  -= ll.mean (axis = 0)
 

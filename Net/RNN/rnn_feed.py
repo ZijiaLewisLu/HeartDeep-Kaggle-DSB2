@@ -33,15 +33,19 @@ RNN_HIDDEN = 250
 
 
 def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
+             logger = None,
              monitor=None,
              update_on_kvstore=None,
              is_train=False):
+
+    if logger is None:
+        logger = logging
 
     N = data_batch_zoo[0].data[0].shape[0]
     c = h = mx.nd.zeros((N, RNN_HIDDEN))
     for t in range(len(marks)):
         m = marks[t]
-        logging.debug('Time Step %d M %d', t, m)
+        logger.debug('Time Step %d M %d', t, m)
         data_batch = data_batch_zoo[t]
 
         assert isinstance(m, int), 'Marks Type Error'
@@ -61,17 +65,17 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
         c = out[1]
         h = out[2]
         pred = out[0]
-        logging.debug('mean of c -> %d'%c.asnumpy().mean())
-        logging.debug('mean of h -> %d'%h.asnumpy().mean())
+        logger.debug('mean of c -> %d'%c.asnumpy().mean())
+        logger.debug('mean of h -> %d'%h.asnumpy().mean())
 
         if is_train and m > 0:
             # print 'is_train and m>0', m
             executor_manager.backward()
 
-            logging.debug('Updateing weight...')
-            logging.debug('--------before update | grad check-------------')
+            logger.debug('Updateing weight...')
+            logger.debug('--------before update | grad check-------------')
             for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
-                logging.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
+                logger.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
             
             
             if update_on_kvstore:
@@ -87,7 +91,7 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
                                kvstore=kvstore)
             
             
-            logging.debug('Done update')
+            logger.debug('Done update')
 
                 # for i in executor_manager.param_arrays:
                 #     print 'after check', i[0].asnumpy().mean()
@@ -198,6 +202,7 @@ def _train_rnn(
                 executor_manager, eval_metric, acc_hist = _run_sax(
                     data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
                     monitor=monitor,
+                    logger=logger,
                     update_on_kvstore=update_on_kvstore,
                     is_train=True,
                 )

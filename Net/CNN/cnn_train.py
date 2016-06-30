@@ -16,12 +16,10 @@ PARAMS={
     'is_rnn'   :False,
 }
 
-
-
-
 def main(param = PARAMS):
 
-    logging.basicConfig(level=logging.INFO)
+    #logging.basicConfig(level=logging.INFO)
+
     out = get(
         6,
         #small = True
@@ -30,13 +28,14 @@ def main(param = PARAMS):
     net = cnn_net()
 
     param['eval_data'] = out['val'] 
-    param['num_epoch'] = 50
- 
+    param['num_epoch'] = 30
+  
     s = Solver(net, out['train'], **param)
     s.train()
     s.all_to_png()
     s.save_best_model()
     s.predict()
+    s.plot_process()
 
 if __name__ == '__main__':
     main()
