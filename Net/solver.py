@@ -54,22 +54,22 @@ class Solver():
         if name is not None:
             self.name += name
 
-        logging.info(self.name)
         self.path = 'Result/' + self.name + '/'
         try:
             os.mkdir(self.path)
         except OSError, e:
             print e, 'ecountered'
-
         
         logging.basicConfig(format='%(levelname)s:%(message)s')
         if k.pop('save_log', True):
-            logging.basicConfig(filename=self.path + 'log.txt')
+            logging.basicConfig(filename='log.txt')
 
         if k.pop('debug_level', False):
             logging.basicConfig(level=logging.DEBUG)
         else:
             logging.basicConfig(level=logging.INFO)
+
+        logging.info(self.name)
 
         with open(self.path + "SolverParam.json", 'w') as f:
             kwargs.pop('eval_data')
@@ -97,10 +97,8 @@ class Solver():
 
         N = preds.shape[0]
         for i in range(N):
-            print type(preds), type(preds[i,0])
-            print type(labels), type(labels[i,0])
             pic = np.hstack([preds[i, 0], gap, labels[i, 0]])
-            plt.imsave(self.path + perfix + '~%d.png' % i, pic)
+            plt.imsave(self.path + perfix + '~N%d.png' % i, pic)
             plt.close('all')
 
     def eval(self, label, pred):
@@ -114,10 +112,10 @@ class Solver():
 
         if self.draw_each:
             self._draw_together(
-                pred, label, 'IOU[%d-%d]-#%d' % (self.nepoch, self.nbatch, self.count))
+                pred, label, 'IOU[E%d-B%d]-#%d' % (self.nepoch, self.nbatch, self.count))
 
         if self.save_pred:
-            with open(self.path + 'pk[%d-%d]-#%d.pk' % (self.nepoch, self.nbatch, self.count), 'w') as f:
+            with open(self.path + 'pk[E%d-B%d]-#%d.pk' % (self.nepoch, self.nbatch, self.count), 'w') as f:
                 pk.dump(pred, f)
                 pk.dump(label, f)
 
@@ -147,7 +145,7 @@ class Solver():
         preds = local['executor_manager'].curr_execgrp.train_execs[0].outputs[0]
         labels = local['eval_batch'].label[0]
         self._draw_together(
-            preds, labels, 'EVAL[%d-%d]' % (params[0], params[1]))
+            preds, labels, 'EVAL[E%d-B%d]' % (params[0], params[1]))
 
     def epoch(self, epoch, symbol, arg_params, aux_params, acc):
         self.acc_hist[epoch] = acc

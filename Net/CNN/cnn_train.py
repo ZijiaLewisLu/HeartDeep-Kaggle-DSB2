@@ -7,8 +7,8 @@ import os
 
 PARAMS={
     'ctx':[mx.context.gpu(1), mx.context.gpu(0)],
-    'learning_rate':6,
-    'num_epoch':200,
+    'learning_rate':3,
+    'num_epoch':1,
     'optimizer':'adam',
     'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
 
@@ -20,19 +20,22 @@ PARAMS={
 
 
 def main():
-
+    logging.basicConfig(level=logging.INFO)
     out = get(
         6,
+        small = True
     )
     net = cnn_net()
 
     PARAMS['eval_data'] = out['val']
-    PARAMS['name'] = 'test'
+    PARAMS['name'] = 'Test'
+    # PARAMS['save_log'] = False 
 
  
     s = Solver(net, out['train'], **PARAMS)
     s.train()
-    s.save_best()
+    s.all_to_png()
+    s.save_best_model()
 
 
 if __name__ == '__main__':
