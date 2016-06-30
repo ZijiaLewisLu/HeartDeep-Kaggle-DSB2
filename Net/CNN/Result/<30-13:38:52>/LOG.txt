@@ -1,0 +1,260 @@
+INFO:<30-13:38:52>
+INFO:Auto-select kvstore type = local_update_cpu
+INFO:Start training with [gpu(1), gpu(0)]
+DEBUG:EVAL, mean of prediciton 0.499791, truth 0.031916, iou 0.059875
+DEBUG:EVAL, mean of prediciton 0.499926, truth 0.016286, iou 0.031410
+DEBUG:[BATCH Parm conv1_weight]> -0.336014
+DEBUG:[BATCH Parm conv2_weight]> 0.341213
+DEBUG:[BATCH Parm conv3_weight]> -0.042950
+DEBUG:[BATCH Parm conv4_weight]> -0.047694
+DEBUG:[BATCH Parm conv5_weight]> -0.058993
+DEBUG:[BATCH Parm conv6_weight]> 0.065045
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.041806
+DEBUG:[BATCH Parm conv7_weight]> 0.021589
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.039570
+DEBUG:[BATCH Parm conv8_weight]> 0.001019
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.064483
+DEBUG:[BATCH Parm conv9_weight]> -0.013827
+DEBUG:[BATCH Parm conv10_weight]> 0.914544
+DEBUG:[BATCH Parm full1_weight]> 0.155269
+DEBUG:[BATCH Parm full2_weight]> -0.090307
+DEBUG:EVAL, mean of prediciton 0.033295, truth 0.020472, iou 0.584808
+DEBUG:EVAL, mean of prediciton 0.033295, truth 0.024338, iou 0.698791
+DEBUG:[BATCH Parm conv1_weight]> 0.149734
+DEBUG:[BATCH Parm conv2_weight]> -0.042572
+DEBUG:[BATCH Parm conv3_weight]> -0.320474
+DEBUG:[BATCH Parm conv4_weight]> -0.043698
+DEBUG:[BATCH Parm conv5_weight]> -0.229652
+DEBUG:[BATCH Parm conv6_weight]> 0.016184
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.020263
+DEBUG:[BATCH Parm conv7_weight]> 0.049357
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.135942
+DEBUG:[BATCH Parm conv8_weight]> -0.009556
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.112859
+DEBUG:[BATCH Parm conv9_weight]> 0.000519
+DEBUG:[BATCH Parm conv10_weight]> 1.164461
+DEBUG:[BATCH Parm full1_weight]> 0.423512
+DEBUG:[BATCH Parm full2_weight]> -0.150003
+DEBUG:EVAL, mean of prediciton 0.958572, truth 0.027700, iou 0.010015
+DEBUG:EVAL, mean of prediciton 0.958572, truth 0.015203, iou 0.003332
+DEBUG:[BATCH Parm conv1_weight]> 0.029536
+DEBUG:[BATCH Parm conv2_weight]> -0.234940
+DEBUG:[BATCH Parm conv3_weight]> -0.408298
+DEBUG:[BATCH Parm conv4_weight]> -0.094553
+DEBUG:[BATCH Parm conv5_weight]> -0.407058
+DEBUG:[BATCH Parm conv6_weight]> 0.009144
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.028333
+DEBUG:[BATCH Parm conv7_weight]> 0.041139
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.135074
+DEBUG:[BATCH Parm conv8_weight]> 0.121238
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.131359
+DEBUG:[BATCH Parm conv9_weight]> -0.048480
+DEBUG:[BATCH Parm conv10_weight]> 1.466034
+DEBUG:[BATCH Parm full1_weight]> 0.439273
+DEBUG:[BATCH Parm full2_weight]> -0.370602
+DEBUG:EVAL, mean of prediciton 0.033539, truth 0.018021, iou 0.390648
+DEBUG:EVAL, mean of prediciton 0.033518, truth 0.025309, iou 0.432993
+DEBUG:[BATCH Parm conv1_weight]> -0.169094
+DEBUG:[BATCH Parm conv2_weight]> -0.441979
+DEBUG:[BATCH Parm conv3_weight]> -0.471136
+DEBUG:[BATCH Parm conv4_weight]> -0.052138
+DEBUG:[BATCH Parm conv5_weight]> -0.532934
+DEBUG:[BATCH Parm conv6_weight]> -0.114644
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.035073
+DEBUG:[BATCH Parm conv7_weight]> 0.038812
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.133612
+DEBUG:[BATCH Parm conv8_weight]> 0.228284
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.146929
+DEBUG:[BATCH Parm conv9_weight]> -0.088557
+DEBUG:[BATCH Parm conv10_weight]> 1.716588
+DEBUG:[BATCH Parm full1_weight]> 0.449003
+DEBUG:[BATCH Parm full2_weight]> -0.547559
+DEBUG:EVAL, mean of prediciton 0.958562, truth 0.023539, iou 0.015599
+DEBUG:EVAL, mean of prediciton 0.958562, truth 0.019150, iou 0.017261
+DEBUG:[BATCH Parm conv1_weight]> -0.215621
+DEBUG:[BATCH Parm conv2_weight]> -0.482360
+DEBUG:[BATCH Parm conv3_weight]> -0.461346
+DEBUG:[BATCH Parm conv4_weight]> -0.042274
+DEBUG:[BATCH Parm conv5_weight]> -0.628883
+DEBUG:[BATCH Parm conv6_weight]> -0.267896
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.070853
+DEBUG:[BATCH Parm conv7_weight]> 0.043373
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.098746
+DEBUG:[BATCH Parm conv8_weight]> 0.300550
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.168351
+DEBUG:[BATCH Parm conv9_weight]> -0.116282
+DEBUG:[BATCH Parm conv10_weight]> 1.954565
+DEBUG:[BATCH Parm full1_weight]> 0.348215
+DEBUG:[BATCH Parm full2_weight]> -0.357061
+DEBUG:EVAL, mean of prediciton 0.012054, truth 0.009628, iou 0.378137
+DEBUG:EVAL, mean of prediciton 0.012054, truth 0.019567, iou 0.413704
+DEBUG:[BATCH Parm conv1_weight]> -0.259328
+DEBUG:[BATCH Parm conv2_weight]> -0.482946
+DEBUG:[BATCH Parm conv3_weight]> -0.456418
+DEBUG:[BATCH Parm conv4_weight]> -0.030679
+DEBUG:[BATCH Parm conv5_weight]> -0.711466
+DEBUG:[BATCH Parm conv6_weight]> -0.400139
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.102036
+DEBUG:[BATCH Parm conv7_weight]> 0.047191
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.068563
+DEBUG:[BATCH Parm conv8_weight]> 0.362874
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.186884
+DEBUG:[BATCH Parm conv9_weight]> -0.140148
+DEBUG:[BATCH Parm conv10_weight]> 2.159327
+DEBUG:[BATCH Parm full1_weight]> 0.261739
+DEBUG:[BATCH Parm full2_weight]> -0.192761
+DEBUG:EVAL, mean of prediciton 0.013062, truth 0.029332, iou 0.389682
+DEBUG:EVAL, mean of prediciton 0.013062, truth 0.014984, iou 0.385564
+DEBUG:[BATCH Parm conv1_weight]> -0.387345
+DEBUG:[BATCH Parm conv2_weight]> -0.512957
+DEBUG:[BATCH Parm conv3_weight]> -0.438801
+DEBUG:[BATCH Parm conv4_weight]> -0.013808
+DEBUG:[BATCH Parm conv5_weight]> -0.784299
+DEBUG:[BATCH Parm conv6_weight]> -0.508433
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.129930
+DEBUG:[BATCH Parm conv7_weight]> 0.050239
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.041685
+DEBUG:[BATCH Parm conv8_weight]> 0.417572
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.203181
+DEBUG:[BATCH Parm conv9_weight]> -0.160960
+DEBUG:[BATCH Parm conv10_weight]> 2.338186
+DEBUG:[BATCH Parm full1_weight]> 0.192465
+DEBUG:[BATCH Parm full2_weight]> -0.048859
+DEBUG:EVAL, mean of prediciton 0.017487, truth 0.026433, iou 0.520672
+DEBUG:EVAL, mean of prediciton 0.017487, truth 0.021454, iou 0.530825
+DEBUG:[BATCH Parm conv1_weight]> -0.535408
+DEBUG:[BATCH Parm conv2_weight]> -0.545482
+DEBUG:[BATCH Parm conv3_weight]> -0.426596
+DEBUG:[BATCH Parm conv4_weight]> -0.004522
+DEBUG:[BATCH Parm conv5_weight]> -0.847650
+DEBUG:[BATCH Parm conv6_weight]> -0.602256
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.154941
+DEBUG:[BATCH Parm conv7_weight]> 0.052754
+DEBUG:[BATCH Parm deconvolution1_weight]> -0.017637
+DEBUG:[BATCH Parm conv8_weight]> 0.466020
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.217631
+DEBUG:[BATCH Parm conv9_weight]> -0.179283
+DEBUG:[BATCH Parm conv10_weight]> 2.496079
+DEBUG:[BATCH Parm full1_weight]> 0.135004
+DEBUG:[BATCH Parm full2_weight]> 0.079044
+DEBUG:EVAL, mean of prediciton 0.022705, truth 0.039825, iou 0.673825
+DEBUG:EVAL, mean of prediciton 0.022705, truth 0.019780, iou 0.489644
+DEBUG:[BATCH Parm conv1_weight]> -0.678915
+DEBUG:[BATCH Parm conv2_weight]> -0.568431
+DEBUG:[BATCH Parm conv3_weight]> -0.414330
+DEBUG:[BATCH Parm conv4_weight]> 0.000799
+DEBUG:[BATCH Parm conv5_weight]> -0.902422
+DEBUG:[BATCH Parm conv6_weight]> -0.684938
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.177199
+DEBUG:[BATCH Parm conv7_weight]> 0.054900
+DEBUG:[BATCH Parm deconvolution1_weight]> 0.003909
+DEBUG:[BATCH Parm conv8_weight]> 0.509169
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.230611
+DEBUG:[BATCH Parm conv9_weight]> -0.195493
+DEBUG:[BATCH Parm conv10_weight]> 2.636568
+DEBUG:[BATCH Parm full1_weight]> 0.082574
+DEBUG:[BATCH Parm full2_weight]> 0.193199
+DEBUG:EVAL, mean of prediciton 0.029541, truth 0.010050, iou 0.446300
+DEBUG:EVAL, mean of prediciton 0.029541, truth 0.025609, iou 0.761044
+DEBUG:[BATCH Parm conv1_weight]> -0.806839
+DEBUG:[BATCH Parm conv2_weight]> -0.588856
+DEBUG:[BATCH Parm conv3_weight]> -0.403745
+DEBUG:[BATCH Parm conv4_weight]> 0.005764
+DEBUG:[BATCH Parm conv5_weight]> -0.952347
+DEBUG:[BATCH Parm conv6_weight]> -0.758752
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.197023
+DEBUG:[BATCH Parm conv7_weight]> 0.056841
+DEBUG:[BATCH Parm deconvolution1_weight]> 0.023088
+DEBUG:[BATCH Parm conv8_weight]> 0.547644
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.242256
+DEBUG:[BATCH Parm conv9_weight]> -0.209934
+DEBUG:[BATCH Parm conv10_weight]> 2.762086
+DEBUG:[BATCH Parm full1_weight]> 0.034154
+DEBUG:[BATCH Parm full2_weight]> 0.293864
+DEBUG:EVAL, mean of prediciton 0.030594, truth 0.029694, iou 0.670716
+DEBUG:EVAL, mean of prediciton 0.030594, truth 0.013209, iou 0.418486
+DEBUG:[BATCH Parm conv1_weight]> -0.922547
+DEBUG:[BATCH Parm conv2_weight]> -0.607501
+DEBUG:[BATCH Parm conv3_weight]> -0.394178
+DEBUG:[BATCH Parm conv4_weight]> 0.009967
+DEBUG:[BATCH Parm conv5_weight]> -0.997440
+DEBUG:[BATCH Parm conv6_weight]> -0.824847
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.214791
+DEBUG:[BATCH Parm conv7_weight]> 0.058581
+DEBUG:[BATCH Parm deconvolution1_weight]> 0.040285
+DEBUG:[BATCH Parm conv8_weight]> 0.582123
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.252809
+DEBUG:[BATCH Parm conv9_weight]> -0.222804
+DEBUG:[BATCH Parm conv10_weight]> 2.874916
+DEBUG:[BATCH Parm full1_weight]> -0.011732
+DEBUG:[BATCH Parm full2_weight]> 0.383621
+DEBUG:EVAL, mean of prediciton 0.029816, truth 0.031998, iou 0.660742
+DEBUG:EVAL, mean of prediciton 0.029816, truth 0.022766, iou 0.654866
+DEBUG:[BATCH Parm conv1_weight]> -1.026313
+DEBUG:[BATCH Parm conv2_weight]> -0.624274
+DEBUG:[BATCH Parm conv3_weight]> -0.385683
+DEBUG:[BATCH Parm conv4_weight]> 0.013799
+DEBUG:[BATCH Parm conv5_weight]> -1.038423
+DEBUG:[BATCH Parm conv6_weight]> -0.884299
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.230768
+DEBUG:[BATCH Parm conv7_weight]> 0.060143
+DEBUG:[BATCH Parm deconvolution1_weight]> 0.055839
+DEBUG:[BATCH Parm conv8_weight]> 0.613205
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.262538
+DEBUG:[BATCH Parm conv9_weight]> -0.234219
+DEBUG:[BATCH Parm conv10_weight]> 2.976836
+DEBUG:[BATCH Parm full1_weight]> -0.053233
+DEBUG:[BATCH Parm full2_weight]> 0.465951
+DEBUG:EVAL, mean of prediciton 0.028687, truth 0.026988, iou 0.642792
+DEBUG:EVAL, mean of prediciton 0.028687, truth 0.016851, iou 0.559589
+DEBUG:[BATCH Parm conv1_weight]> -1.119893
+DEBUG:[BATCH Parm conv2_weight]> -0.639367
+DEBUG:[BATCH Parm conv3_weight]> -0.378025
+DEBUG:[BATCH Parm conv4_weight]> 0.017256
+DEBUG:[BATCH Parm conv5_weight]> -1.075345
+DEBUG:[BATCH Parm conv6_weight]> -0.937886
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.245176
+DEBUG:[BATCH Parm conv7_weight]> 0.061548
+DEBUG:[BATCH Parm deconvolution1_weight]> 0.069934
+DEBUG:[BATCH Parm conv8_weight]> 0.641279
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.271536
+DEBUG:[BATCH Parm conv9_weight]> -0.244359
+DEBUG:[BATCH Parm conv10_weight]> 3.069183
+DEBUG:[BATCH Parm full1_weight]> -0.090815
+DEBUG:[BATCH Parm full2_weight]> 0.537402
+DEBUG:EVAL, mean of prediciton 0.023926, truth 0.018707, iou 0.643760
+DEBUG:EVAL, mean of prediciton 0.023926, truth 0.018560, iou 0.644559
+DEBUG:[BATCH Parm conv1_weight]> -1.204426
+DEBUG:[BATCH Parm conv2_weight]> -0.653004
+DEBUG:[BATCH Parm conv3_weight]> -0.371109
+DEBUG:[BATCH Parm conv4_weight]> 0.020380
+DEBUG:[BATCH Parm conv5_weight]> -1.108713
+DEBUG:[BATCH Parm conv6_weight]> -0.986305
+DEBUG:[BATCH Parm deconvolution0_weight]> 0.258191
+DEBUG:[BATCH Parm conv7_weight]> 0.062818
+DEBUG:[BATCH Parm deconvolution1_weight]> 0.082664
+DEBUG:[BATCH Parm conv8_weight]> 0.666638
+DEBUG:[BATCH Parm deconvolution2_weight]> 0.279766
+DEBUG:[BATCH Parm conv9_weight]> -0.253454
+DEBUG:[BATCH Parm conv10_weight]> 3.152822
+DEBUG:[BATCH Parm full1_weight]> -0.123651
+DEBUG:[BATCH Parm full2_weight]> 0.605309
+DEBUG:Epoch[0] Resetting Data Iterator
+DEBUG:Epoch[0] Resetting Eval Metric
+INFO:Epoch[0] Time cost=5.009
+INFO:Epoch[0] Train accuracy: 0.433201
+DEBUG:EVAL, mean of prediciton 0.023941, truth 0.005742, iou 0.342700
+DEBUG:EVAL, mean of prediciton 0.024017, truth 0.006276, iou 0.336132
+DEBUG:EVAL, mean of prediciton 0.023941, truth 0.009359, iou 0.458836
+DEBUG:EVAL, mean of prediciton 0.024017, truth 0.005742, iou 0.341822
+INFO:Epoch[0] Validation-eval=0.369873
+INFO:Saved checkpoint to "Result/<30-13:38:52>/[0.43320]-0000.params"
+DEBUG:Pred mean>>0.023987 std>>0.153059
+DEBUG:Pred mean>>0.024002 std>>0.153104
+DEBUG:Pred mean>>0.024002 std>>0.153104
+DEBUG:Pred mean>>0.023987 std>>0.153059
+DEBUG:Pred mean>>0.024002 std>>0.153104
+DEBUG:Pred mean>>0.024002 std>>0.153104
+DEBUG:Pred mean>>0.024002 std>>0.153104
+DEBUG:Pred mean>>0.023987 std>>0.153059
+DEBUG:Pred mean>>0.024002 std>>0.153104

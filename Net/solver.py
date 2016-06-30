@@ -13,15 +13,18 @@ import copy
 import json
 import RNN
 import CNN
-from utils import *
+import sys
+from my_utils import *
 
 
 class Solver():
 
     def __init__(self, net, train_data, **kwargs):
-        
+
         k = kwargs.copy()
         self.net = net
+
+        # prepare Train_data
         self.train_data = train_data
         if isinstance(train_data, mx.io.DataIter):
             self.batch_size = train_data.batch_size
@@ -30,54 +33,68 @@ class Solver():
                 'numpy_batch_size', min(train_data.shape[0], 128))
             k['numpy_batch_size'] = self.batch_size
 
+        # init params
         self.num_epoch = k['num_epoch']
-        self.acc_hist = {}
-        self.arg = {}
-        self.best_acc = 0
-        self.best_param = None
-        self.nbatch = -1
-        self.nepoch = -1
-        self.count  = 0
+        self.reset()
 
+        # whether draw outputs of every forward step
         self.block_bn = k.pop('block_bn', False)
-        # draw outputs of every forwards
         self.draw_each = k.pop('draw_each', False)
-        # save prediction to pk files
+        # whether save prediction to pk files
         self.save_pred = k.pop('save_pred', False)
         self.save_best = k.pop('save_best', True)
         self.is_rnn = k.pop('is_rnn', False)
+        self.lgr    = k.pop('logger', None)
 
+        # make name and save_dir
         now = time.ctime(int(time.time()))
         now = now.split(' ')
         name = k.pop('name', None)
-        self.name = now[2] + '-' + now[3]
+        #t = now[3].split(':')
+        #t = ':'.join(t[:2])
+        self.name = '<' + now[2] + '-' + now[3] + '>'
         if name is not None:
             self.name += name
 
-        logging.info(self.name)
-        self.path = 'Result/' + self.name + '/'
+        self.path = 'Result/' + self.name + '[E%d]/'%self.num_epoch
         try:
             os.mkdir(self.path)
         except OSError, e:
             print e, 'ecountered'
 
-        
-        logging.basicConfig(format='%(levelname)s:%(message)s')
-        if k.pop('save_log', True):
-            logging.basicConfig(filename=self.path + 'log.txt')
+        # config logging
+        if self.lgr is None:
+            self._init_log()
 
-        if k.pop('debug_level', False):
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.INFO)
+        self.lgr.info(self.name)
 
+        # save kwargs to file
+        save_k = kwargs.copy()
         with open(self.path + "SolverParam.json", 'w') as f:
-            kwargs.pop('eval_data')
-            kwargs.pop('ctx')
-            kwargs.pop('initializer')
-            json.dump(kwargs, f)
+            save_k.pop('eval_data', None)
+            ctx = save_k['ctx']
+            ctx = [ctx] if not isinstance(ctx, list) else ctx
+            save_k['ctx'] = ctx.__str__()
+            save_k.pop('initializer', None)
+            save_k.pop('logger', None)
 
+            json.dump(save_k, f)
+
+        # store kwargs
         self.kwargs = k
+        self.origin_k = kwargs
+
+    def _init_log(self):
+        logging.basicConfig(level=logging.DEBUG, filename=self.path+'LOG.txt', format='%(levelname)s:%(message)s')
+        logger = logging.getLogger('')
+        formatter = logging.Formatter('%(levelname)s:%(message)s')
+
+        console = logging.StreamHandler(sys.stdout)
+        console.setLevel(logging.INFO)
+        console.setFormatter(formatter)
+        logger.addHandler(console)
+
+        self.lgr = logger
 
     def reset(self):
         self.acc_hist = {}
@@ -86,6 +103,9 @@ class Solver():
         self.best_param = None
         self.nbatch = -1
         self.nepoch = -1
+        self.param_grad = {}
+        self.param_name = None
+        self.count = 0
 
     def _draw_together(self, preds, labels, perfix):
         gap = np.ones((256, 5))
@@ -97,10 +117,8 @@ class Solver():
 
         N = preds.shape[0]
         for i in range(N):
-            print type(preds), type(preds[i,0])
-            print type(labels), type(labels[i,0])
             pic = np.hstack([preds[i, 0], gap, labels[i, 0]])
-            plt.imsave(self.path + perfix + '~%d.png' % i, pic)
+            plt.imsave(self.path + perfix + '~N%d.png' % i, pic)
             plt.close('all')
 
     def eval(self, label, pred):
@@ -109,45 +127,80 @@ class Solver():
         union = pred + label
 
         out = np.sum(conjunct * 2) / np.sum(union)
-        logging.debug('EVAL, mean of prediciton %f, truth %f, iou %f' %
-                      (pred.mean(), label.mean(), out))
+        self.lgr.debug('EVAL, mean of prediciton %f, truth %f, iou %f' %
+                       (pred.mean(), label.mean(), out))
 
         if self.draw_each:
             self._draw_together(
-                pred, label, 'IOU[%d-%d]-#%d' % (self.nepoch, self.nbatch, self.count))
+                pred, label, 'IOU[E%d-B%d]-#%d' % (self.nepoch, self.nbatch, self.count))
 
         if self.save_pred:
-            with open(self.path + 'pk[%d-%d]-#%d.pk' % (self.nepoch, self.nbatch, self.count), 'w') as f:
+            with open(self.path + 'pk[E%d-B%d]-#%d.pk' % (self.nepoch, self.nbatch, self.count), 'w') as f:
                 pk.dump(pred, f)
                 pk.dump(label, f)
 
         self.count += 1
 
         if not 0 <= out <= 1:
-            logging.warning('eval error >>%f %f %f' %
-                            (out, np.sum(conjunct), np.sum(union)))
+            self.lgr.warning('eval error >>%f %f %f' %
+                             (out, np.sum(conjunct), np.sum(union)))
 
         return out
 
     def batch(self, params):
         """epoch, nbatch, eval_metric, locals """
         self.nbatch = params[1]
-        for pairs in zip(params[3]['executor_manager'].param_names, params[3]['executor_manager'].param_arrays):
-            n, p = pairs
-            if 'beta' in n and self.block_bn:
-                # print 'in batch', n , p[0].asnumpy().mean()
-                shape = p[0].shape
-                conttx = p[0].context
-                p[0] = mx.ndarray.zeros(shape, ctx=conttx)
-            if 'weight' in n:
-                logging.debug('[BATCH Parm %s]> %f', n, p[0].asnumpy().mean())
+
+        manager = params[3]['executor_manager']
+
+        if self.param_name is None:
+            self.param_name = manager.param_names
+
+        for i, n in enumerate(self.param_name):
+            ps = params[3]['executor_manager'].param_arrays[i]
+            gs = params[3]['executor_manager'].grad_arrays[i]
+
+            psum = None
+            gsum = None
+
+            # for the same param on different gpu
+            # operation for param
+            for p in ps:
+                # if necessary, fix beta in batch norm
+                if 'beta' in n and self.block_bn:
+                    p = 0*p
+                
+                if psum is None:
+                    psum = p.asnumpy()
+                else:
+                    psum += p.asnumpy()
+
+            # print params' means
+            self.lgr.debug('[B%d %s]> %f', self.nbatch, n, psum.mean())
+
+            # save param
+            if n not in self.param_grad.keys():
+                self.param_grad[n] = [[psum],[]]
+            else:
+                self.param_grad[n][0].append(psum)
+
+            # operation for grad
+            for g in gs:
+                if gsum is None:
+                    gsum = g.asnumpy()
+                else:
+                    gsum+= g.asnumpy()
+            
+            # save grad
+            self.param_grad[n][1].append(gsum)
 
     def eval_batch(self, params):
         local = params[3]
-        preds = local['executor_manager'].curr_execgrp.train_execs[0].outputs[0]
+        preds = local['executor_manager'].curr_execgrp.train_execs[
+            0].outputs[0]
         labels = local['eval_batch'].label[0]
         self._draw_together(
-            preds, labels, 'EVAL[%d-%d]' % (params[0], params[1]))
+            preds, labels, 'EVAL[E%d-B%d]' % (params[0], params[1]))
 
     def epoch(self, epoch, symbol, arg_params, aux_params, acc):
         self.acc_hist[epoch] = acc
@@ -155,12 +208,38 @@ class Solver():
         self.nepoch = epoch
         # print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) /
         this_acc = np.sum(acc) / float(len(acc))
-        logging.info('Epoch[%d] Train accuracy: %f', epoch, this_acc)
+        self.lgr.info('Epoch[%d] Train accuracy: %f', epoch, this_acc)
 
         if self.save_best and \
                 (self.best_param is None or this_acc > self.best_acc):
             self.best_param = (epoch, symbol, arg_params, aux_params)
             self.best_acc = this_acc
+
+    def plot_process(self):
+        """
+        self.param_grad is a dict containning a list of each params
+        for each list, the first item is a list of all params, the second item is a list of a grad
+        """
+        names = self.param_name
+
+        path = self.path + 'Insight/'
+        os.mkdir(path)
+
+        for i, n in enumerate(names):
+            fig = plt.figure()
+            param, grad = self.param_grad[n]
+
+            # when using more than one gpu, weight are in differnt gpus
+            mean_param = [ x.mean() for x in param ]
+            mean_grad  = [ x.mean() for x in grad]
+
+            fig.add_subplot(1,2,1).plot(mean_param)
+            fig.add_subplot(1,2,2).plot(mean_grad)
+            fig.suptitle(n+' Param:Grad')
+
+            fig.savefig(path+n+'.png')
+            fig.clear()
+            plt.close('all')
 
     def save_best_model(self):
         if self.best_param is None or self.best_acc == 0:
@@ -168,13 +247,10 @@ class Solver():
             return
 
         from mxnet.model import save_checkpoint
-        save_checkpoint("%s[%0.5f]" %
-                        (self.path, self.best_acc), *self.best_param)
+        save_checkpoint("%s[ACC-%0.5f E%d]" %
+                        (self.path, self.best_acc, self.best_param[0]), *self.best_param)
 
-    def get_dict(self):
-        return self.acc_hist
-
-    def get_list(self):
+    def get_acc_list(self):
         l = []
         for k in sorted(self.acc_hist.keys()):
             l += self.acc_hist[k]
@@ -188,36 +264,53 @@ class Solver():
             plt.close()
 
     def all_to_png(self):
-        l = self.get_list()
+        l = []
+        for k in sorted(self.acc_hist.keys()):
+            average = np.mean(self.acc_hist[k])
+            l.append(k)
+
         plt.plot(l)
         path = os.path.join(self.path, 'acc_his-all.png')
         plt.savefig(path)
         plt.close()
 
+    def _load(self, perfix, epoch):
+        """
+        ``prefix-symbol.json`` will be saved for symbol.
+        ``prefix-epoch.params`` will be saved for parameters.
+        """
+        from mx.model import load_checkpoint
+        return load_checkpoint(prefix, epoch)
+
     def _init_model(self):
 
         if self.is_rnn:
             self.model = RNN.rnn_feed.Feed(self.net, **self.kwargs)
-        else:
-            self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
-        if self.kwargs.pop('load',False):
-            perfix = self.kwargs['load_perfix']
-            epoch = self.kwargs['load_epoch']
-            raise NotImplemented('Load is not supported')
+        else:
+            if self.kwargs.pop('load', False):
+                perfix = self.kwargs['load_perfix']
+                epoch = self.kwargs['load_epoch']
+                symbol, arg_params, aux_params = self.load(prefix, epoch)
+                self.model = mx.model.FeedForward(
+                    self.net, arg_params=arg_params, aux_params=aux_params, **self.kwargs)
+
+            else:
+                self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
     def train(self):
+
         kwords = {
             'kvstore': 'local',
             'eval_metric': self.eval,
             'epoch_end_callback': self.epoch,
             'batch_end_callback': self.batch,
-            'eval_batch_end_callback': self.eval_batch,
+            #'eval_batch_end_callback': self.eval_batch,
         }
 
         for term in ['y', 'eval_data', 'logger', 'work_load_list', 'monitor']:
             if term in self.kwargs.keys():
-                kwords[term] = self.kwargs.pop(term) 
+                kwords[term] = self.kwargs.pop(term)
 
         self._init_model()
 
@@ -226,4 +319,31 @@ class Solver():
             marks = self.kwargs.pop('marks')
             self.model.fit(self.train_data, marks, **kwords)
         else:
-            self.model.fit(self.train_data, **kwords)
+            self.model.fit(self.train_data, logger=self.lgr, **kwords)
+
+    def predict(self):
+        if 'eval_data' in self.origin_k.keys():
+            X = self.origin_k['eval_data']
+        else:
+            X = self.train_data
+            self.lgr.warning('No Eval Data, Using Training Data')
+
+        out = self.model.predict(X, return_data=True)
+
+        N = out[0].shape[0]
+
+        for idx in range(N):
+            gap = np.ones((256, 5))
+            pred = out[0][idx, 0]
+            img = out[1][idx, 0]
+            label = out[2][idx, 0]
+            png = np.hstack([pred, gap, label])
+
+            self.lgr.debug('Prediction mean>>%f std>>%f', pred.mean(), pred.std())
+
+            fig = plt.figure()
+            fig.add_subplot(121).imshow(png)
+            fig.add_subplot(122).imshow(img)
+            fig.savefig(self.path+'Pred[%d].png'%(idx))
+            fig.clear()
+            plt.close('all')
