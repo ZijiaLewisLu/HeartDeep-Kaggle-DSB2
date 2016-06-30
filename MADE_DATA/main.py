@@ -6,6 +6,9 @@ import skimage.draw as d
 import skimage.transform as t
 import time
 
+INNER = 130
+OUTER = 80
+
 def show(img):
     plt.imshow(img, cmap = 'gray')
     plt.show()
@@ -193,12 +196,6 @@ class Heart():
         return self.series, self.labels
 
 
-cv = my_rotate(45)
-cv = misc.imresize(cv, (150,150))
-show(cv)
-
-INNER = 130
-OUTER = 80
 
 class Maker(object):
     
@@ -299,7 +296,7 @@ class Maker(object):
         #TODO downsample
         now = time.ctime(int(time.time()))
         now = now.split(' ')
-        now = now[2]+'-'+now
+        now = now[2]+'-'+now[3]
         perfix = perfix+'[%d]'%(len(self.imgs))+now
         #os.mkdir(folder)
         
@@ -317,6 +314,8 @@ class Maker(object):
             pk.dump(labels, f)
         
 if __name__ == '__main__':
+
+    
     RE = [(100,20),(105,66)]
     g = Maker(RE)
     g.generate(10, 45)
