@@ -85,7 +85,7 @@ def train():
 	    	label = out[2][idx,0]
 	    	png = np.hstack([pred,gap,label])
 	    	
-	    	logging.debug('Pred mean>>',pred.mean(), 'std>>',pred.std())
+	    	logging.debug('Pred mean>>', pred.mean(), 'std>>',pred.std())
 
 	    	fig = plt.figure()
 	    	fig.add_subplot(121).imshow(png)

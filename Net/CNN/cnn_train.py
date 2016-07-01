@@ -36,7 +36,6 @@ def main(param = PARAMS, sv=SOLVE):
     net = cnn_net()
 
     param['eval_data'] = out['val'] 
-    param['num_epoch'] = 30
   
     s = Solver(net, out['train'], sv, **param)
     s.train()
@@ -46,6 +45,12 @@ def main(param = PARAMS, sv=SOLVE):
     s.plot_process()
 
 if __name__ == '__main__':
+    # temperal setting
+    SOLVE['load'] = True
+    SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/Net/CNN/Result/<0Save>/<1-12:30:48>[E30]/[ACC-0.90725 E29]'
+    SOLVE['load_epoch '] = 29
+    PARAMS['num_epoch'] = 40
+
     main()
 
     

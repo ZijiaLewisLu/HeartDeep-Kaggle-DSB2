@@ -291,13 +291,10 @@ class Solver():
             self.model = RNN.rnn_feed.Feed(self.net, **self.kwargs)
 
         else:
-            if self.kwargs.pop('load', False):
-                perfix = self.kwargs['load_perfix']
-                epoch = self.kwargs['load_epoch']
-                symbol, arg_params, aux_params = self.load(prefix, epoch)
-                self.model = mx.model.FeedForward(
-                    self.net, arg_params=arg_params, aux_params=aux_params, **self.kwargs)
-
+            if self.sks.pop('load', False):
+                perfix = self.sks['load_perfix']
+                epoch = self.sks['load_epoch']
+                self.model = mx.model.FeedForward.load(perfix, epoch, **self.kwargs)
             else:
                 self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
@@ -342,7 +339,7 @@ class Solver():
             label = out[2][idx, 0]
             png = np.hstack([pred, gap, label])
 
-            self.lgr.debug('Prediction mean>>%f std>>%f', pred.mean(), pred.std())
+            self.lgr.debug('Prediction mean>>%f Img mean>>%f', pred.mean(), img.mean())
 
             fig = plt.figure()
             fig.add_subplot(121).imshow(png)
