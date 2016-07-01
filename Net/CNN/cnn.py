@@ -2,19 +2,23 @@ import ipt, logging
 import mxnet as mx
 import net as n
 from my_utils import *
+from my_layer import *
 
 import os
 # os.environ['MXNET_ENGINE_TYPE'] = 'NaiveEngine'
 
-def cnn_net():
-	net = mx.sym.Reshape(data = n.bn10, target_shape = (0, 1*256*256))
-	net = mx.sym.FullyConnected(data = net, name = 'full1', num_hidden = 100)
-	net = mx.sym.FullyConnected(data = net, name = 'full2', num_hidden = 1*256*256)
-	net = mx.sym.Reshape(data = net, target_shape = (0,1,256,256))
-	# net = mx.sym.Activation(data=net, act_type='sigmoid')
-	# net = mx.sym.Custommnp(data=net, name='softmax', op_type='sfmx')
-	net = mx.sym.LogisticRegressionOutput(data = net, name = 'softmax')
-	return net
+def cnn_net(use_logis=True):
+    net = mx.sym.Reshape(data = n.bn10, target_shape = (0, 1*256*256))
+    net = mx.sym.FullyConnected(data = net, name = 'full1', num_hidden = 100)
+    net = mx.sym.FullyConnected(data = net, name = 'full2', num_hidden = 1*256*256)
+    net = mx.sym.Reshape(data = net, target_shape = (0,1,256,256))
+
+    if use_logis:
+        net = mx.sym.LogisticRegressionOutput(data = net, name = 'softmax')
+    else:
+        net = mx.sym.Activation(data=net, act_type='sigmoid')
+        net = mx.sym.Custom(data=net, name='softmax', op_type='sfmx')
+    return net
 
 
 def train():

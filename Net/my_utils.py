@@ -7,7 +7,7 @@ import numpy as np
 import mxnet.ndarray as nd
 import matplotlib.pyplot as plt
 import os
-import cPickle as pk
+import pickle as pk
 from PIL import Image
 import copy
 import GPU_availability as G

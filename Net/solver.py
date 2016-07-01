@@ -40,11 +40,11 @@ class Solver():
         sks_bk = sks.copy()
         self.sks = sks
         # whether draw outputs of every forward step
-        # self.block_bn = k.pop('block_bn', False)
         # self.draw_each = k.pop('draw_each', False)
         # whether save prediction to pk files
         # self.save_pred = k.pop('save_pred', False)
         # self.save_best = k.pop('save_best', True)
+        self.block_bn = self.sks.pop('block_bn', False)
         self.is_rnn = self.sks.pop('is_rnn', False)
         self.lgr    = self.sks.pop('logger', None)
 
@@ -168,10 +168,12 @@ class Solver():
 
             # for the same param on different gpu
             # operation for param
-            for p in ps:
+            for j, p in enumerate(ps):
                 # if necessary, fix beta in batch norm
-                if 'beta' in n and self.sks.pop('block_bn', False):
-                    p = 0*p
+                if 'beta' in n and self.block_bn:
+                    # p = 0*p
+                    # params[3]['executor_manager'].param_arrays[i][j] = 0*p
+                    print 'check mean', params[3]['executor_manager'].param_arrays[i][j].asnumpy().mean()
                 
                 if psum is None:
                     psum = p.asnumpy()
@@ -295,6 +297,7 @@ class Solver():
                 perfix = self.sks['load_perfix']
                 epoch = self.sks['load_epoch']
                 self.model = mx.model.FeedForward.load(perfix, epoch, **self.kwargs)
+                self.model.begin_epoch=0
             else:
                 self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
