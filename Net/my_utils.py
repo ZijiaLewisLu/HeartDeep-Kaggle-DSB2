@@ -7,7 +7,7 @@ import numpy as np
 import mxnet.ndarray as nd
 import matplotlib.pyplot as plt
 import os
-import pickle as pk
+import cPickle as pk
 from PIL import Image
 import copy
 
@@ -49,7 +49,7 @@ def predict_test(model, val, perfix):
 def parse_time():
     now = time.ctime(int(time.time()))
     now = now.split(' ')
-    return now[2] + '-' + now[3]
+    return now[-3] + '-' + now[-2]
 
 
 def plot_save(img, name):

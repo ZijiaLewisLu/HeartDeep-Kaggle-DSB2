@@ -4,9 +4,12 @@ from cnn import cnn_net
 from my_utils import *
 from solver import Solver
 import os
+import GPU_availability as g
+
+gpus = g.GPU_availability()[:2]
 
 PARAMS={
-    'ctx':[mx.context.gpu(3), mx.context.gpu(2)],
+    'ctx':[mx.context.gpu(i) for i in gpus],
     'learning_rate':3,
     'num_epoch':1,
     'optimizer':'adam',
@@ -18,9 +21,12 @@ SOLVE = {
     'is_rnn'   :False,  
 }
 
-def main(param = PARAMS):
+def main(param = PARAMS, sv=SOLVE):
 
-    #logging.basicConfig(level=logging.INFO)
+    sv['name'] = 'TEST'
+    input_var = raw_input('Are you testing now? ')
+    if 'no' in input_var:
+        sv.pop('name')
 
     out = get(
         6,
@@ -30,9 +36,9 @@ def main(param = PARAMS):
     net = cnn_net()
 
     param['eval_data'] = out['val'] 
-    param['num_epoch'] = 15
+    param['num_epoch'] = 30
   
-    s = Solver(net, out['train'], SOLVE, **param)
+    s = Solver(net, out['train'], sv, **param)
     s.train()
     s.predict()
     s.all_to_png()

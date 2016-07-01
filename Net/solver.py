@@ -51,10 +51,10 @@ class Solver():
         # make name and save_dir
         now = time.ctime(int(time.time()))
         now = now.split(' ')
-        name = k.pop('name', None)
+        name = self.sks.pop('name', None)
         #t = now[3].split(':')
         #t = ':'.join(t[:2])
-        self.name = '<' + now[2] + '-' + now[3] + '>'
+        self.name = '<' + now[-3] + '-' + now[-2] + '>'
         if name is not None:
             self.name += name
 
@@ -183,9 +183,9 @@ class Solver():
 
             # save param
             if n not in self.param_grad.keys():
-                self.param_grad[n] = [[psum],[]]
+                self.param_grad[n] = [[psum.mean()],[]]
             else:
-                self.param_grad[n][0].append(psum)
+                self.param_grad[n][0].append(psum.mean())
 
             # operation for grad
             for g in gs:
@@ -195,7 +195,7 @@ class Solver():
                     gsum+= g.asnumpy()
             
             # save grad
-            self.param_grad[n][1].append(gsum)
+            self.param_grad[n][1].append(gsum.mean())
 
     def eval_batch(self, params):
         local = params[3]
@@ -211,7 +211,7 @@ class Solver():
         self.nepoch = epoch
         # print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) /
         this_acc = np.sum(acc) / float(len(acc))
-        self.lgr.info('Epoch[%d] Train accuracy: %f', epoch, this_acc)
+        self.lgr.info('E[%d] T acc: %f', epoch, this_acc)
 
         if self.sks.pop('save_best',True) and \
                 (self.best_param is None or this_acc > self.best_acc):
@@ -233,8 +233,8 @@ class Solver():
             param, grad = self.param_grad[n]
 
             # when using more than one gpu, weight are in differnt gpus
-            mean_param = [ x.mean() for x in param ]
-            mean_grad  = [ x.mean() for x in grad]
+            mean_param = param # [ x.mean() for x in param ]
+            mean_grad  = grad  # [ x.mean() for x in grad]
 
             fig.add_subplot(1,2,1).plot(mean_param, marker='o')
             fig.add_subplot(1,2,2).plot(mean_grad,  marker='o')
@@ -270,7 +270,7 @@ class Solver():
         l = []
         for k in sorted(self.acc_hist.keys()):
             average = np.mean(self.acc_hist[k])
-            l.append(k)
+            l.append(average)
 
         plt.plot(l, marker='o')
         path = os.path.join(self.path, 'acc_his-all.png')
