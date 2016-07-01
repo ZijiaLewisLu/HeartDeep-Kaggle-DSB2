@@ -295,6 +295,7 @@ class Solver():
                 perfix = self.sks['load_perfix']
                 epoch = self.sks['load_epoch']
                 self.model = mx.model.FeedForward.load(perfix, epoch, **self.kwargs)
+                self.model.begin_epoch=0
             else:
                 self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
