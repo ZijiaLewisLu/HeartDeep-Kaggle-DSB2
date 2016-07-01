@@ -6,7 +6,11 @@ from solver import Solver
 import os
 
 PARAMS={
+<<<<<<< HEAD
     'ctx': u.gpu(2),
+=======
+    'ctx':u.gpu(2),
+>>>>>>> 6e627f4dd47fa1eb8332e7c12bca5107d68de006
     'learning_rate':3,
     'num_epoch':15,
     #'optimizer':'adam',
