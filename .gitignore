@@ -10,8 +10,13 @@
 12_*
 *json
 *params
+<<<<<<< HEAD
+*h5
+TestGround.ipynb
 model2_weight*
 LOG.txt
+
+
 
 !kaggle_tutorial
 !kaggle-ndsb2
