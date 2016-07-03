@@ -1,15 +1,15 @@
 import ipt, logging
 import mxnet as mx
 from cnn import cnn_net
-from my_utils import *
+import my_utils as u
 from solver import Solver
 import os
 
 PARAMS={
-    'ctx':[mx.context.gpu(3), mx.context.gpu(2)],
+    'ctx':u.gpu(2),
     'learning_rate':3,
-    'num_epoch':1,
-    'optimizer':'adam',
+    'num_epoch':15,
+    #'optimizer':'adam',
     'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
 }
 
@@ -18,21 +18,27 @@ SOLVE = {
     'is_rnn'   :False,  
 }
 
-def main(param = PARAMS):
+def main(param = PARAMS, sv=SOLVE, small=False):
 
-    #logging.basicConfig(level=logging.INFO)
+    sv['name'] = 'TEST'
+    input_var = raw_input('Are you testing now? ')
+    if 'no' in input_var:
+        sv.pop('name')
+    else:
+        sv['name'] += input_var
 
-    out = get(
+
+    out = u.get(
         6,
-        #small = True
-    )
-    
-    net = cnn_net()
+        small = small
+    ) 
+    net = cnn_net(
+        use_logis=False
+        )
 
     param['eval_data'] = out['val'] 
-    param['num_epoch'] = 15
   
-    s = Solver(net, out['train'], SOLVE, **param)
+    s = Solver(net, out['train'], sv, **param)
     s.train()
     s.predict()
     s.all_to_png()
@@ -40,6 +46,17 @@ def main(param = PARAMS):
     s.plot_process()
 
 if __name__ == '__main__':
+    # temperal setting
+    SOLVE['load'] = False
+    SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/Net/CNN/Result/<1-15:28:48>[E40]/[ACC-0.92596 E38]'
+    SOLVE['load_epoch'] = 38
+    SOLVE['use_logis'] = True
+    SOLVE['block_bn'] = True
+    
+    PARAMS['num_epoch'] = 1
+    # PARAMS['optimizer'] = 'adam'
+    # PARAMS['learning_rate'] = 1e-2
+
     main()
 
     

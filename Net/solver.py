@@ -40,21 +40,21 @@ class Solver():
         sks_bk = sks.copy()
         self.sks = sks
         # whether draw outputs of every forward step
-        # self.block_bn = k.pop('block_bn', False)
         # self.draw_each = k.pop('draw_each', False)
         # whether save prediction to pk files
         # self.save_pred = k.pop('save_pred', False)
         # self.save_best = k.pop('save_best', True)
+        self.block_bn = self.sks.pop('block_bn', False)
         self.is_rnn = self.sks.pop('is_rnn', False)
         self.lgr    = self.sks.pop('logger', None)
 
         # make name and save_dir
         now = time.ctime(int(time.time()))
         now = now.split(' ')
-        name = k.pop('name', None)
+        name = self.sks.pop('name', None)
         #t = now[3].split(':')
         #t = ':'.join(t[:2])
-        self.name = '<' + now[2] + '-' + now[3] + '>'
+        self.name = '<' + now[-3] + '-' + now[-2] + '>'
         if name is not None:
             self.name += name
 
@@ -168,10 +168,12 @@ class Solver():
 
             # for the same param on different gpu
             # operation for param
-            for p in ps:
+            for j, p in enumerate(ps):
                 # if necessary, fix beta in batch norm
-                if 'beta' in n and self.sks.pop('block_bn', False):
-                    p = 0*p
+                if 'beta' in n and self.block_bn:
+                    # p = 0*p
+                    # params[3]['executor_manager'].param_arrays[i][j] = 0*p
+                    print 'check mean', params[3]['executor_manager'].param_arrays[i][j].asnumpy().mean()
                 
                 if psum is None:
                     psum = p.asnumpy()
@@ -183,9 +185,9 @@ class Solver():
 
             # save param
             if n not in self.param_grad.keys():
-                self.param_grad[n] = [[psum],[]]
+                self.param_grad[n] = [[psum.mean()],[]]
             else:
-                self.param_grad[n][0].append(psum)
+                self.param_grad[n][0].append(psum.mean())
 
             # operation for grad
             for g in gs:
@@ -195,7 +197,7 @@ class Solver():
                     gsum+= g.asnumpy()
             
             # save grad
-            self.param_grad[n][1].append(gsum)
+            self.param_grad[n][1].append(gsum.mean())
 
     def eval_batch(self, params):
         local = params[3]
@@ -211,7 +213,7 @@ class Solver():
         self.nepoch = epoch
         # print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) /
         this_acc = np.sum(acc) / float(len(acc))
-        self.lgr.info('Epoch[%d] Train accuracy: %f', epoch, this_acc)
+        self.lgr.info('E[%d] T acc: %f', epoch, this_acc)
 
         if self.sks.pop('save_best',True) and \
                 (self.best_param is None or this_acc > self.best_acc):
@@ -233,8 +235,8 @@ class Solver():
             param, grad = self.param_grad[n]
 
             # when using more than one gpu, weight are in differnt gpus
-            mean_param = [ x.mean() for x in param ]
-            mean_grad  = [ x.mean() for x in grad]
+            mean_param = param # [ x.mean() for x in param ]
+            mean_grad  = grad  # [ x.mean() for x in grad]
 
             fig.add_subplot(1,2,1).plot(mean_param, marker='o')
             fig.add_subplot(1,2,2).plot(mean_grad,  marker='o')
@@ -270,7 +272,7 @@ class Solver():
         l = []
         for k in sorted(self.acc_hist.keys()):
             average = np.mean(self.acc_hist[k])
-            l.append(k)
+            l.append(average)
 
         plt.plot(l, marker='o')
         path = os.path.join(self.path, 'acc_his-all.png')
@@ -291,13 +293,11 @@ class Solver():
             self.model = RNN.rnn_feed.Feed(self.net, **self.kwargs)
 
         else:
-            if self.kwargs.pop('load', False):
-                perfix = self.kwargs['load_perfix']
-                epoch = self.kwargs['load_epoch']
-                symbol, arg_params, aux_params = self.load(prefix, epoch)
-                self.model = mx.model.FeedForward(
-                    self.net, arg_params=arg_params, aux_params=aux_params, **self.kwargs)
-
+            if self.sks.pop('load', False):
+                perfix = self.sks['load_perfix']
+                epoch = self.sks['load_epoch']
+                self.model = mx.model.FeedForward.load(perfix, epoch, **self.kwargs)
+                self.model.begin_epoch=0
             else:
                 self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
@@ -342,7 +342,7 @@ class Solver():
             label = out[2][idx, 0]
             png = np.hstack([pred, gap, label])
 
-            self.lgr.debug('Prediction mean>>%f std>>%f', pred.mean(), pred.std())
+            self.lgr.debug('Prediction mean>>%f Img mean>>%f', pred.mean(), img.mean())
 
             fig = plt.figure()
             fig.add_subplot(121).imshow(png)

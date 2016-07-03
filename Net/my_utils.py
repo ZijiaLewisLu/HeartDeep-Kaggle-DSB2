@@ -10,19 +10,33 @@ import os
 import pickle as pk
 from PIL import Image
 import copy
+import GPU_availability as G
 
-def predict_test(model, val, perfix):
+def gpu(num):
+    gs = G.GPU_availability()[:num]
+    return [ mx.context.gpu(g) for g in gs ]
+
+def predict_draw(model, val, folder=None):
+    if model.arg_params is None:
+        print 'INIT MODEL...'
+        d = val.provide_data
+        l = val.provide_label
+        model._init_params(dict(d + l))
+
     out = model.predict(
             val,
             # num_batch=4,
             return_data=True
         )
 
+    if folder is None:
+        folder = parse_time() + 'Prediction'
+    
+    if not folder.endswith('/'):
+        folder += '/'
 
-    if perfix is None:
-        perfix = parse_time()
     try:
-        os.mkdir(perfix)
+        os.mkdir(folder)
     except OSError, e:
         print e, 'ecountered'
 
@@ -35,21 +49,19 @@ def predict_test(model, val, perfix):
         label = out[2][idx,0]
         png = np.hstack([pred,gap,label])
         
-        logging.debug('Pred mean>>',pred.mean(), 'std>>',pred.std())
+        print 'Pred mean>>',pred.mean(), 'Label mean>>', label.mean()
 
         fig = plt.figure()
         fig.add_subplot(121).imshow(png)
         fig.add_subplot(122).imshow(img)
-        fig.savefig(perfix+'Pred%d.png'%(idx))
+        fig.savefig(folder+'Pred%d.png'%(idx))
         fig.clear()
         plt.close('all')
-
-
 
 def parse_time():
     now = time.ctime(int(time.time()))
     now = now.split(' ')
-    return now[2] + '-' + now[3]
+    return '<'+now[-3]+'-'+now[-2]+'>'
 
 
 def plot_save(img, name):
@@ -61,25 +73,18 @@ def plot_save(img, name):
 
 
 def eval_iou(label, pred):
-    '''don't know why, but input as np arrays'''
-    # assert isinstance(pred, mx.ndarray.NDArray), type(label)
-
-    # print '>', pred.mean()
 
     conjunct = pred * label
     union = pred + label
-    # print conjunct, conjunct.sum()
-    # print union, union.sum()
     out = np.sum(conjunct * 2) / np.sum(union)
-    # print out
-    # assert False
 
     if not 0 <= out <= 1:
         print 'eval error >>', out, np.sum(conjunct), np.sum(union)
 
     return out
 
-
+###################################################
+# Load Data
 def _load_pk_file(fname, rate):
     with open(fname, 'r') as f:
         img = pk.load(f)
@@ -192,124 +197,4 @@ def get(bs, small=False, return_raw=False):
 
 
 
-####################################################
 
-class IOU(mx.operator.CustomOp):
-
-    # def __init__(self):
-        # super(IOU,self).__init__(self)
-        # self.First = True
-
-    def forward(self, is_train, req, in_data, out_data, aux):
-        # do nothing
-
-        # if self.First:
-        # print 'in forward'
-            # self.First = False
-        self.assign(out_data[0], req[0], in_data[0])
-        # print 'out forward'
-        # assert False, 'here'
-
-    def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
-
-        pred = in_data[0]
-        ll = in_data[1]
-
-        out = nd.add(pred, ll)
-        out = nd.divide(ll, out)
-        # out = (ll/(pred+ll))**2
-        out = - nd.multiply(out, out)
-        self.assign(in_grad[0], req[0], out)
-        # print 'out backward'
-
-
-@mx.operator.register("iou")
-class IOUProp(mx.operator.CustomOpProp):
-    def __init__():
-        super(IOUProp, self).__init__(need_top_grad=False)
-
-    def list_arguments(self):
-        return ['data', 'label']
-
-    def list_outputs(self):
-        return ['outputs']
-
-    def infer_shape(self, inshape):
-        ''' [data shape, label shape] ,[output shape], [aux ..?]'''
-        # print inshape, 'iou'
-        data_shape = inshape[0]
-        # print data_shape
-
-        # print [tuple(inshape[0]), tuple(inshape[0])], [ (inshape[0][0], )], []
-        return [inshape[0], inshape[0]], [inshape[0]], []
-
-    def create_operator(self, ctx, shapes, dtypes):
-        return IOU()
-
-
-########################################################
-
-
-class Sfmx(mx.operator.CustomOp):
-
-    def forward(self, is_train, req, in_data, out_data, aux):
-
-        # Do nothing!
-
-        self.assign(out_data[0], req[0], in_data[0])
-        # print 'out forward'
-        # assert False, 'here'
-
-    def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
-
-        is_label = in_data[1]
-
-        not_label = (is_label == 0)
-        # out  = out_data[0]
-
-        pred = in_data[0]
-
-        ctxxx = pred.context
-        one = mx.ndarray.ones(1, ctx=ctxxx)
-        e = mx.ndarray.exp(one)
-
-        base  = mx.ndarray.exp(pred) + mx.ndarray.exp(1 - pred)\
-
-        # print 'before grad_is'
-
-        grad_is = e * 2 / (base * base)
-
-        # exp  = nd.exp(2*pred-1)
-
-        grad_not = - grad_is
-
-        out = - is_label * grad_is - not_label * grad_not
-
-        self.assign(in_grad[0], req[0], out)
-
-
-@mx.operator.register("sfmx")
-class SfmxProp(mx.operator.CustomOpProp):
-
-    def __init__(self):
-        super(SfmxProp, self).__init__(need_top_grad=False)
-
-    def list_arguments(self):
-        return ['data', 'label']
-
-    def list_outputs(self):
-        return ['outputs']
-
-    def infer_shape(self, inshape):
-        ''' [data shape, label shape] ,[output shape], [aux ..?]'''
-        # print inshape, 'iou'
-        data_shape = inshape[0]
-        # print data_shape
-
-        # print [tuple(inshape[0]), tuple(inshape[0])], [ (inshape[0][0], )], []
-        return [inshape[0], inshape[0]], [inshape[0]], []
-
-    def create_operator(self, ctx, shapes, dtypes):
-        return Sfmx()
-
-#############################################################
