@@ -1,0 +1,24 @@
+INFO:root:------------------------------------0.001000-------------------------------
+INFO:root:0.001
+INFO:root:Auto-select kvstore type = local_update_cpu
+INFO:root:Start training with [gpu(0), gpu(1), gpu(2)]
+INFO:root:Epoch[0] Time cost=8.456
+INFO:root:Epoch[0] Validation-eval=0.015790
+INFO:root:Epoch[1] Time cost=8.316
+INFO:root:Epoch[1] Validation-eval=0.015791
+INFO:root:Epoch[2] Time cost=8.346
+INFO:root:Epoch[2] Validation-eval=0.015791
+INFO:root:Epoch[3] Time cost=8.354
+INFO:root:Epoch[3] Validation-eval=0.015791
+INFO:root:Epoch[4] Time cost=8.732
+INFO:root:Epoch[4] Validation-eval=0.015791
+INFO:root:Epoch[5] Time cost=8.466
+INFO:root:Epoch[5] Validation-eval=0.015791
+INFO:root:Epoch[6] Time cost=8.380
+INFO:root:Epoch[6] Validation-eval=0.015791
+INFO:root:Epoch[7] Time cost=8.390
+INFO:root:Epoch[7] Validation-eval=0.015791
+INFO:root:Epoch[8] Time cost=8.532
+INFO:root:Epoch[8] Validation-eval=0.015791
+INFO:root:Epoch[9] Time cost=8.358
+INFO:root:Epoch[9] Validation-eval=0.015791

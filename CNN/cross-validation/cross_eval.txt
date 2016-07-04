@@ -1,0 +1,5 @@
+[0;36m  File [0;32m"/home/zijia/HeartDeepLearning/Net/CNN/cross-val.py"[0;36m, line [0;32m14[0m
+[0;31m    for l in [ 1e-3, 3e-3, 6e-3, 1e-2, 3e-2, 6e-2, 1e-1, 3e-1, 6e-1, 1, 3, 6.efint-]:[0m
+[0m                                                                             ^[0m
+[0;31mSyntaxError[0m[0;31m:[0m invalid token
+
