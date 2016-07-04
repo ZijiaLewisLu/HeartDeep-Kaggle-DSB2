@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import skimage.draw as d
 import skimage.transform as t
 import time
-
+RE = [(100,20),(105,66)]
 INNER = 130
 OUTER = 80
 
@@ -199,11 +199,11 @@ class Heart():
 
 class Maker(object):
     
-    def __init__(self, re):
+    def __init__(self, re, small=False):
         """RE has the info for LV and E"""
         self.RE = re
         self.heart = Heart(re)
-        self.background = misc.imread('background.jpg', mode='P')
+        self.background = misc.imread('background_small.jpg', mode='P') if small else misc.imread('background.jpg', mode='P')
     
     def rotate(self, img, label, angle):
         assert img.shape==label.shape
@@ -312,10 +312,10 @@ class Maker(object):
         with open(perfix+'.pk','w') as f:
             pk.dump(imgs, f)
             pk.dump(labels, f)
+
         
 if __name__ == '__main__':
 
-    
     RE = [(100,20),(105,66)]
     g = Maker(RE)
     g.generate(10, 45)

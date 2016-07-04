@@ -226,7 +226,6 @@ def resize_and_augment_sunny(image, output_shape=(256, 256), augment=None):
     #augment['zoom_x']=1.0
     #augment['zoom_y']=1.0
     augment_tform = build_augmentation_transform(flip=False, **augment)
-    print augment_tform.params
     total_tform = tform + tform_uncenter + augment_tform + tform_center
     #result.reshape(final_shape)
     return fast_warp(image, total_tform, output_shape=output_shape, mode='constant')
