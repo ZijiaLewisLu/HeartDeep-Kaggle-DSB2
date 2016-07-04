@@ -115,8 +115,6 @@ class Solver():
                 if 'e_marks' in save_k:
                     save_k['e_marks'] = save_k['e_marks'].__str__()  
 
-            print save_k                  
-
             json.dump(s, f, indent=4, sort_keys=True)
             json.dump(save_k, f, indent=4, sort_keys=True)
 
@@ -303,7 +301,14 @@ class Solver():
 
         if self.is_rnn:
             from RNN import rnn_feed
-            self.model = rnn_feed.Feed(self.net, **self.kwargs)
+
+            if self.sks.pop('load', False):
+                perfix = self.sks['load_perfix']
+                epoch = self.sks['load_epoch']
+                self.model = rnn_feed.Feed.load(perfix, epoch, **self.kwargs)
+                self.model.begin_epoch=0
+            else:
+                self.model = rnn_feed.Feed(self.net, **self.kwargs)
 
         else:
             if self.sks.pop('load', False):

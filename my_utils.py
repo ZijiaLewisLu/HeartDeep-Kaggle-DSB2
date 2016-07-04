@@ -142,7 +142,7 @@ def prepare_set(img, label, rate=0.1):
 
     N = img.shape[0]
 
-    split = max(1,round(N*0.1))
+    split = max(1,round(N*rate))
 
     img_train, ll_train = img[split:], label[split:]
     img_val,   ll_val   = img[:split], label[:split]
@@ -207,11 +207,11 @@ def augment_sunny(img, label):
 def get(bs, small=False, return_raw=False, aug=False):
 
     if small:
-        filename = "/home/zijia/HeartDeepLearning/Net/data/o1.pk"
+        filename = "/home/zijia/HeartDeepLearning/DATA/PK/o1.pk"
     else:
         filename = [
-            '/home/zijia/HeartDeepLearning/Net/data/online.pk',
-            '/home/zijia/HeartDeepLearning/Net/data/validate.pk',
+            '/home/zijia/HeartDeepLearning/DATA/PK/online.pk',
+            '/home/zijia/HeartDeepLearning/DATA/PK/validate.pk',
         ]
 
     img, train = load_pk(filename)

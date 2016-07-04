@@ -301,12 +301,18 @@ class Maker(object):
         #os.mkdir(folder)
         
         if downsample:
-            raise NotImplementedError('Not downsample')
+            for i, p in enumerate(self.imgs):
+                self.imgs[i] = t.resize(p, (256,256))
+            #raise NotImplementedError('Not downsample')
+            for j, l in enumerate(self.labels):
+                self.labels[j] = t.resize(l, (256,256))
+
+
+        imgs = [  i[None,:,:] for i in self.imgs ]
+        labels = [ l[None,:,:] for l in self.labels ]
         
-        imgs = np.stack(self.imgs)
-        labels = np.stack(self.labels)
-        print imgs.shape
-        print labels.shape
+        imgs = np.concatenate(imgs, axis=0)
+        labels = np.concatenate(labels, axis=0)
         
         import cPickle as pk
         with open(perfix+'.pk','w') as f:
@@ -318,7 +324,7 @@ if __name__ == '__main__':
 
     RE = [(100,20),(105,66)]
     g = Maker(RE)
-    g.generate(10, 45)
-    g.save()
+    g.generate(30, 45)
+    g.save(downsample=True)
 
 

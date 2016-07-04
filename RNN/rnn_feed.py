@@ -22,9 +22,9 @@ from mxnet.executor_manager import DataParallelExecutorManager, _check_arguments
 from mxnet import ndarray as nd
 from mxnet.model import *
 from mxnet.model import _create_kvstore, _initialize_kvstore, _update_params, _update_params_on_kvstore
-from mxnet.executor_manager import _load_general
+from mxnet.executor_manager import _load_general, _load_data
 
-from my_utils import parse_time, plot_save
+from HeartDeepLearning.my_utils import parse_time, plot_save
 
 import matplotlib.pyplot as plt
 import pickle as pk
@@ -41,33 +41,59 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
     if logger is None:
         logger = logging
 
-    N = data_batch_zoo[0].data[0].shape[0]
-    c = h = mx.nd.zeros((N, RNN_HIDDEN))
     for t in range(len(marks)):
         m = marks[t]
         logger.debug('Time Step %d M %d', t, m)
         data_batch = data_batch_zoo[t]
 
-        assert isinstance(m, int), 'Marks Type Error'
+        assert isinstance(m, int), 'Marks Type Error, %s provided' % type(m)
 
         #load in data
         executor_manager.load_data_batch(data_batch)
+
         data_targets = [[e.arg_dict[name] for i, e in enumerate(executor_manager.curr_execgrp.train_execs)]
-                                                for name in ['c', 'h']]
-        _load_general([c], data_targets[0])
-        _load_general([h], data_targets[1])
+                                                        for name in ['c', 'h']]
+        if t==0:
+            c = []
+            h = []
+            for tg in data_targets[0]:
+                ccc = tg.context
+                shape = tg.shape
+                c.append(nd.zeros(shape, ctx=ccc))
+
+            for tg in data_targets[1]:
+                ccc = tg.context
+                shape = tg.shape
+                h.append(nd.zeros(shape, ctx=ccc))
+        
+        for idx in range(len(c)):
+            _load_general([c[idx]], [data_targets[0][idx]])
+            _load_general([h[idx]], [data_targets[1][idx]])
+        
 
         executor_manager.forward(is_train=is_train)
 
+        c = []
+        h = []
+        pred = []
+        c_mean = 0
+        h_mean = 0
+        for ex in executor_manager.curr_execgrp.train_execs:
+            out = ex.outputs
+            c.append(out[1])
+            h.append(out[2])
+            pred.append(out[0])
 
-        # assume only using one gpu
-        out = executor_manager.curr_execgrp.train_execs[0].outputs
-        c = out[1]
-        h = out[2]
-        pred = out[0]
-        logger.debug('mean of c -> %d'%c.asnumpy().mean())
-        logger.debug('mean of h -> %d'%h.asnumpy().mean())
+            c_mean += out[1].asnumpy().mean()
+            h_mean += out[2].asnumpy().mean()
+        
+        pred = pred[0]
+        
+        
+        logger.debug('mean of c -> %f', c_mean/len(c))
+        logger.debug('mean of h -> %f', h_mean/len(h))
 
+        
         if is_train and m > 0:
             # print 'is_train and m>0', m
             executor_manager.backward()
@@ -131,8 +157,6 @@ def _train_rnn(
     """Mark should be a list of #SeriesLength, annotating if image has label by 1 , 0"""
     # TODO check mark shape
     # TODO marks not working if label of SAX is different in one batch
-    print '>>>>>>run_rnn', optimizer
-
 
     if logger is None:
         logger = logging
@@ -184,19 +208,11 @@ def _train_rnn(
         while True:
             do_reset = True
 
+            # iter on batch_size
             for data_batch_zoo in train_data:
                 assert isinstance(data_batch_zoo, list), "Iter Error"
                 if monitor is not None:
                     monitor.tic()
-
-
-                # load in C and H
-                # In future, execgrp should become curr_execgrp!!
-                # data_targets = [[e.arg_dict[name]
-                #                  for i, e in enumerate(executor_manager.execgrp.train_execs)]
-                #                 for name in ['c', 'h']]
-                # _load_general([c], data_targets[0])
-                # _load_general([h], data_targets[1])
 
                 # Start to iter on Time steps
                 executor_manager, eval_metric, acc_hist = _run_sax(
@@ -206,8 +222,6 @@ def _train_rnn(
                     update_on_kvstore=update_on_kvstore,
                     is_train=True,
                 )
-
-
 
                 nbatch += 1
                 # batch callback (for print purpose)
@@ -228,6 +242,7 @@ def _train_rnn(
                     do_reset = False
                     break
 
+            # end on batch_size
             if do_reset is True:
                 logger.debug('Epoch[%d] Resetting Data Iterator', epoch)
                 train_data.reset()
@@ -397,6 +412,7 @@ class Feed(FeedForward):
         return model
 
     def simple_pred(self, X):
+        raise NotImplemented('Not Ready, I am Shy')
         if not isinstance(X, mx.nd.NDArray):
             X = mx.nd.array(X)
 
@@ -418,3 +434,64 @@ class Feed(FeedForward):
         pred_exec.forward(is_train=False)
 
         return pred_exec.outputs
+
+    def predict(self, X, num_batch=None, return_data=False, reset=True):
+        """Overwrite"""
+        
+        X = self._init_iter(X, None, is_train=False)
+
+        if reset:
+            X.reset()
+        data_shapes = X.provide_data
+        data_names = [x[0] for x in data_shapes]
+        self._init_predictor(data_shapes)
+        batch_size = X.batch_size
+        data_arrays = [self._pred_exec.arg_dict[name] for name in data_names]
+        
+        if return_data:
+            data_list = []
+            label_list = []
+
+        i = 0
+        pred_list = []
+        for batch_zoo in X:
+            preds = []
+            for t, data_batch in enumerate(batch_zoo):
+
+                #load in data
+                _data_batch(data_batch, data_arrays[0])
+
+                data_targets = data_arrays[1:]
+                if t==0:
+                    c, h  = data_targets[:]
+                print type(c), type(h)
+
+                _load_general([c], data_targets[0])
+                _load_general([h], data_targets[1])
+                
+                self._pred_exec.forward(is_train=False)
+
+                # process output                    
+                out = self._pred_exec.outputs
+                c = out[1]
+                h = out[2]
+                pred = out[0]
+
+                real_size = batch_size - data_batch.pad
+                preds.append(pred[:real_size].asnumpy()[None,:,:,:,:])
+
+            in_one_preds= np.concatenate(preds, axis=0)
+            pred_list.append(in_one_preds)
+
+            i += 1
+            if num_batch is not None and i == num_batch:
+                break
+
+        prediction = np.concatenate(pred_list, axis=1)
+
+        if return_data:
+            data = X.data
+            label = X.label
+            return prediction, data, label
+        else:
+            return prediction
