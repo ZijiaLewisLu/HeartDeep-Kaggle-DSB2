@@ -11,6 +11,9 @@ import pickle as pk
 from PIL import Image
 import copy
 import GPU_availability as G
+import HeartDeepLearning.image_transform as tf
+import numpy as np
+
 
 def gpu(num):
     gs = G.GPU_availability()[:num]
@@ -85,65 +88,49 @@ def eval_iou(label, pred):
 
 ###################################################
 # Load Data
-def _load_pk_file(fname, rate):
-    with open(fname, 'r') as f:
-        img = pk.load(f)
-        ll = pk.load(f)
+def load_pk(fname):
+    fname = [fname] if not isinstance(fname, list) else fname
+    
+    img_all = None
+    label_all = None
 
-    #print '-mean'
-    img -= img.mean(axis=0)
-    # ll  -= ll.mean (axis = 0)
+    for single_f in fname:
+        with open(single_f, 'r') as f:
+            img = pk.load(f)
+            ll = pk.load(f)
 
-    img = img[:, None, :, :]
-    ll = ll[:, None, :, :]
+        #print '-mean'
+        img -= img.mean(axis=0)
+
+        if img_all == None:
+            img_all = img
+        else:
+            img_all = np.concatenate((img_all, img))
+
+        if label_all == None:
+            label_all = ll
+        else:
+            label_all = np.concatenate((label_all, ll))
+
+    img_all = img_all[:,None,:,:]
+    label_all = label_all[:,None,:,:]
+
+    return img_all, label_all
+
+
+def prepare_set(img, label, rate=0.1):
 
     N = img.shape[0]
 
-    p = int(rate * N)
+    split = max(1,round(N*0.1))
 
-    val_img = img[:p]
-    img = img[p:]
-    val_ll = ll[:p]
-    ll = ll[p:]
-
-    return img, ll, val_img, val_ll
-
-
-def load_pk(fname, rate=0.1):
-
-    fname = [fname] if not isinstance(fname, list) else fname
-
-    img_train = ll_train = img_val = ll_val = None
-    for f in fname:
-        img, ll, vimg, vll = _load_pk_file(f, rate)
-
-        if img_train == None:
-            img_train = img
-        else:
-            img_train = np.concatenate((img_train, img))
-
-        if ll_train == None:
-            ll_train = ll
-        else:
-            ll_train = np.concatenate((ll_train, ll))
-
-        if img_val == None:
-            img_val = vimg
-        else:
-            img_val = np.concatenate((img_val, vimg))
-
-        if ll_val == None:
-            ll_val = vll
-        else:
-            ll_val = np.concatenate((ll_val, vll))
-
-    # return img_train , ll_train, img_val, ll_val
-    # print 'len of val', img_val.shape[0]
+    img_train, ll_train = img[split:], label[split:]
+    img_val,   ll_val   = img[:split], label[:split]
 
     return img_train, ll_train, img_val, ll_val
 
 
-def create_iter(img, ll, vimg, vll, batch_size=50, last_batch_handle='pad'):
+def create_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
 
     train = mx.io.NDArrayIter(
         img,
@@ -160,13 +147,62 @@ def create_iter(img, ll, vimg, vll, batch_size=50, last_batch_handle='pad'):
 
     return train, val
 
+def augment_sunny(img, label):
+    """input has the shape of N*1*256*256"""
+    aug = tf.NO_AUGMENT_PARAMS
 
-def load(filename, bs=10, return_raw=False):
+    N = img.shape[0]
+    x, y = img[0,0].shape
 
-    data = load_pk(filename)
-    print 'Data Shape, Train %s, Val %s' % (data[0].shape, data[2].shape)
+    end_i = np.zeros((N*5,1,x,y))
+    end_l = np.zeros((N*5,1,x,y))
 
-    train, val = create_iter(*data, batch_size=bs)
+    for idx in range(N):
+        i = img[idx,0]
+        ll  = label[idx,0]
+        for j in range(5):
+            zx, zy, sx, sy = np.random.randint(80,high=120,size=4)/100.00
+            aug['zoom_x'] = zx
+            aug['zoom_y'] = zy
+            aug['skew_x'] = sx
+            aug['skew_y'] = sy
+            aug['rotate'] = np.random.randint(360)
+            aug['translate_x'], aug['translate_y'] = np.random.randint(50,size=2)
+
+            i_aug = tf.resize_and_augment_sunny(i, augment=aug)
+            l_aug = tf.resize_and_augment_sunny(ll, augment=aug)
+            l_aug = (l_aug>0.4)
+
+            end_i[idx*5+j,0]=i_aug
+            end_l[idx*5+j,0]=l_aug
+
+    end_i = np.concatenate((end_i, img),axis=0)
+    end_l = np.concatenate((end_l, label),axis=0)
+
+    assert end_i.mean(axis=(2,3)).all()!=0
+    return end_i, end_l
+
+
+
+def get(bs, small=False, return_raw=False, aug=False):
+
+    if small:
+        filename = "/home/zijia/HeartDeepLearning/Net/data/o1.pk"
+    else:
+        filename = [
+            '/home/zijia/HeartDeepLearning/Net/data/online.pk',
+            '/home/zijia/HeartDeepLearning/Net/data/validate.pk',
+        ]
+
+    img, train = load_pk(filename)
+    it, lt, iv, lv = prepare_set(img,train)
+
+    if aug:
+        it, lt = augment_sunny(it,lt) 
+
+    print 'Data Shape, Train %s, Val %s' % (it.shape, iv.shape)
+
+    train, val = create_iter(it, lt, iv, lv, batch_size=bs)
 
     output = {
         'train': train,
@@ -174,27 +210,10 @@ def load(filename, bs=10, return_raw=False):
     }
 
     if return_raw:
-        output['train_img'] = data[0]
-        output['train_label'] = data[1]
-        output['val_img'] = data[2]
-        output['val_label'] = data[3]
+        output['train_img'] = it
+        output['train_label'] = lt
+        output['val_img'] = iv
+        output['val_label'] = lv
 
     return output
-
-
-def get(bs, small=False, return_raw=False):
-
-    if small:
-        f = "/home/zijia/HeartDeepLearning/Net/data/o1.pk"
-    else:
-        f = [
-            '/home/zijia/HeartDeepLearning/Net/data/online.pk',
-            '/home/zijia/HeartDeepLearning/Net/data/validate.pk',
-        ]
-
-    return load(f, bs=bs, return_raw=return_raw)
-
-
-
-
 
