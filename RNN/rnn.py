@@ -1,15 +1,15 @@
 import ipt
 import logging
 import mxnet as mx
-import net as n
-from utils import *
+import my_net as n
+from my_utils import *
 from rnn_feed import Feed
 from rnn_iter import RnnIter
 import matplotlib.pyplot as plt
 from rnn_metric import RnnM
 
 
-def rnn(dropout=0.):
+def rnn(dropout=0., logistic=True):
 
     begin = n.reshape1  # N, 1*256*256
     num_hidden = 250
@@ -56,7 +56,7 @@ def rnn(dropout=0.):
     reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, 1, 256, 256))
 
 
-    if True:
+    if not logistic:
         sgmd = mx.sym.Activation(data=reshape2, act_type='sigmoid')
         c = mx.sym.BlockGrad(data=c)
         h = mx.sym.BlockGrad(data=h)
@@ -87,13 +87,12 @@ def contruct_iter():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
     net = rnn()
     train, marks = contruct_iter()
     logging.debug(marks)
 
-    c = Callback(draw_each=True)
     logging.info(c.name)
 
     num_epoch = 30

@@ -71,17 +71,7 @@ class Solver():
         self.lgr.info(self.name)
 
         # save kwargs to file
-        save_k = kwargs.copy()
-        with open(self.path + "SolverParam.json", 'w') as f:
-            save_k.pop('eval_data', None)
-            ctx = save_k['ctx']
-            ctx = [ctx] if not isinstance(ctx, list) else ctx
-            save_k['ctx'] = ctx.__str__()
-            save_k.pop('initializer', None)
-            save_k.pop('logger', None)
-
-            json.dump(sks_bk, f, indent=4, sort_keys=True)
-            json.dump(save_k, f, indent=4, sort_keys=True)
+        self.save_kwargs(sks_bk, kwargs)
 
         # store kwargs
         self.kwargs = k
@@ -109,6 +99,28 @@ class Solver():
         self.param_grad = {}
         self.param_name = None
         self.count = 0
+
+    def save_kwargs(self, s,k):
+        save_k = k.copy()
+        with open(self.path + "SolverParam.json", 'w') as f:
+            save_k.pop('eval_data', None)
+            ctx = save_k['ctx']
+            ctx = [ctx] if not isinstance(ctx, list) else ctx
+            save_k['ctx'] = ctx.__str__()
+            save_k.pop('initializer', None)
+            save_k.pop('logger', None)
+
+            if self.is_rnn:
+                save_k['marks'] = save_k['marks'].__str__()
+                if 'e_marks' in save_k:
+                    save_k['e_marks'] = save_k['e_marks'].__str__()  
+
+            print save_k                  
+
+            json.dump(s, f, indent=4, sort_keys=True)
+            json.dump(save_k, f, indent=4, sort_keys=True)
+
+
 
     def _draw_together(self, preds, labels, perfix):
         gap = np.ones((256, 5))
@@ -290,7 +302,8 @@ class Solver():
     def _init_model(self):
 
         if self.is_rnn:
-            self.model = RNN.rnn_feed.Feed(self.net, **self.kwargs)
+            from RNN import rnn_feed
+            self.model = rnn_feed.Feed(self.net, **self.kwargs)
 
         else:
             if self.sks.pop('load', False):
@@ -315,12 +328,17 @@ class Solver():
             if term in self.kwargs.keys():
                 kwords[term] = self.kwargs.pop(term)
 
+        if self.is_rnn:
+            kwords['e_marks'] = self.kwargs.pop('e_marks',None)
+            marks = self.kwargs.pop('marks')
+            from RNN import rnn_metric
+            kwords['eval_metric'] = rnn_metric.RnnM(self.eval)
+
+        # prepare and train
         self._init_model()
 
         if self.is_rnn:
-            kwords['e_marks'] = self.kwargs['e_marks']
-            marks = self.kwargs.pop('marks')
-            self.model.fit(self.train_data, marks, **kwords)
+            self.model.fit(self.train_data, marks, logger = self.lgr, **kwords)
         else:
             self.model.fit(self.train_data, logger=self.lgr, **kwords)
 

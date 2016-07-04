@@ -1,6 +1,6 @@
 import ipt, logging
 import mxnet as mx
-import net as n
+import my_net as n
 from my_utils import *
 from my_layer import *
 

@@ -10,13 +10,32 @@ import os
 import pickle as pk
 from PIL import Image
 import copy
-import GPU_availability as G
-import HeartDeepLearning.image_transform as tf
+import HeartDeepLearning.DATA.image_transform as tf
 import numpy as np
+
+# Credit to Gaiyu
+def GPU_availability():
+  import itertools
+  from subprocess import Popen, PIPE
+  import re
+  output = Popen(['nvidia-smi'], stdout=PIPE).communicate()[0]
+  lines = output.split('\n')
+  performance = {}
+  index = 0
+  for i in range(len(lines)):
+    if 'GTX' in lines[i]:
+      p = int(re.search(r'P(\d?\d)', lines[i+1]).group(0)[-1])
+      if p>1:
+        try:
+          performance[p].append(index)
+        except:
+          performance.update({p : [index]})
+      index += 1
+  return list(itertools.chain(*[performance[key] for key in reversed(sorted(performance.keys()))]))
 
 
 def gpu(num):
-    gs = G.GPU_availability()[:num]
+    gs = GPU_availability()[:num]
     return [ mx.context.gpu(g) for g in gs ]
 
 def predict_draw(model, val, folder=None):
@@ -165,10 +184,10 @@ def augment_sunny(img, label):
             zx, zy, sx, sy = np.random.randint(80,high=120,size=4)/100.00
             aug['zoom_x'] = zx
             aug['zoom_y'] = zy
-            aug['skew_x'] = sx
-            aug['skew_y'] = sy
+            aug['skew_x'] = sx*15
+            aug['skew_y'] = sy*15
             aug['rotate'] = np.random.randint(360)
-            aug['translate_x'], aug['translate_y'] = np.random.randint(50,size=2)
+            aug['translate_x'], aug['translate_y'] = np.random.randint(-50,50,size=2)
 
             i_aug = tf.resize_and_augment_sunny(i, augment=aug)
             l_aug = tf.resize_and_augment_sunny(ll, augment=aug)
