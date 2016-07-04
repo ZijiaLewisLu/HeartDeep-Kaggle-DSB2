@@ -203,15 +203,15 @@ def resize_and_augment(images, output_shape=(50, 50), augment=None):
     return result, volume_change
 
 
-def resize_to_make_sunny_fit(image, output_shape=(50, 50)):
+def resize_to_make_sunny_fit(image, output_shape=(256, 256)):
     scaling = max(image.shape[-2]/output_shape[-2], image.shape[-1]/output_shape[-1])
     tform = build_rescale_transform(scaling, image.shape[-2:], target_shape=output_shape)
     return fast_warp(image, tform, output_shape=output_shape)
 
 
-def resize_and_augment_sunny(image, output_shape=(50, 50), augment=None):
+def resize_and_augment_sunny(image, output_shape=(256, 256), augment=None):
     if augment is None:
-        return resize_to_make_sunny_fit(image, output_shape=(50, 50))
+        return resize_to_make_sunny_fit(image, output_shape=(256, 256))
 
     final_shape = image.shape[:-2] + output_shape
     result = np.zeros(final_shape, dtype="float32")
