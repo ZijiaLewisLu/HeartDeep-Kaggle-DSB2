@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 import skimage.draw as d
 import skimage.transform as t
 import time
-RE = [(100,20),(105,66)]
+RE = [
+    [100,20], # outter radius and width of circle
+    [105,66]  # h and w of ellipse
+    ]
 INNER = 130
 OUTER = 80
 
@@ -19,7 +22,8 @@ class Heart():
         self.base_lv_radius, self.base_lv_thick = RE[0]
         self.base_e_h, self.base_e_w = RE[1]
 
-        self.v = 2*self.base_e_h +20
+        v = max(self.base_e_h, self.base_lv_radius)
+        self.v = 2*v +20
         self.h = 2*self.base_lv_radius + self.base_e_w + 20
         self.canva = np.zeros((self.v,self.h))
 

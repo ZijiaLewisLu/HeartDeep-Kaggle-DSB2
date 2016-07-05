@@ -1,21 +1,37 @@
-from main import Heart, Maker
-from main import RE
+from model import Heart, Maker
+from model import RE
 import numpy as np
+from copy import copy
 
-space = np.linspace(0.5,1.2,10)
+space = np.random.randn(10)*0.18+1
+img_all = []
+label_all= []
 for s in space:
-    require = RE.copy()
-    require[0] = require[0]*s
+    require = copy(RE)
+    require[0] = [ int(round(n*s)) for n in require[0] ]
     center_scale = np.random.choice(space, 1)
-    center = (256*center_scale, 256*center_scale)
+    center = (int(round(256*center_scale)), int(round(256*center_scale)))
+    print center, require
 
-    m = Maker(require)
-    imgstack = None
-    labelstack=None
-    for a in np.random.randn(360, size=10):
-        m.generate(30,a)
-        if stack is None:
-            imgstack=
+    m = Maker(require)   
+    a = np.random.randint(180)
+    m.generate(30,a, center=center)
+        
+    img = [ i[None,None,None,:,:] for i in m.imgs ]
+    label = [ l[None,None,None,:,:] for l in m.labels]
+    img = np.concatenate(img, axis=0)
+    label = np.concatenate(label, axis=0)
+    img_all.append(img)
+    label_all.append(label)
 
+img_all = np.concatenate(img_all, axis=1)
+label_all = np.concatenate(label_all,axis=1)
 
-    m.generate(30,)
+import pickle as pk
+from HeartDeepLearning.my_utils import parse_time
+
+fname = '[T%d,N%d]'%(img_all.shape[0], img_all.shape[1]) +parse_time()+'.pk'
+with open(fname,'w') as f:
+    pk.dump(img_all,f)
+    pk.dump(label_all,f) 
+
