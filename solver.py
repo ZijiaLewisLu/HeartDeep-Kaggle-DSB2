@@ -99,6 +99,7 @@ class Solver():
         self.param_grad = {}
         self.param_name = None
         self.count = 0
+        self.model = None
 
     def save_kwargs(self, s,k):
         save_k = k.copy()
@@ -114,8 +115,6 @@ class Solver():
                 save_k['marks'] = save_k['marks'].__str__()
                 if 'e_marks' in save_k:
                     save_k['e_marks'] = save_k['e_marks'].__str__()  
-
-            print save_k                  
 
             json.dump(s, f, indent=4, sort_keys=True)
             json.dump(save_k, f, indent=4, sort_keys=True)
@@ -303,7 +302,14 @@ class Solver():
 
         if self.is_rnn:
             from RNN import rnn_feed
-            self.model = rnn_feed.Feed(self.net, **self.kwargs)
+
+            if self.sks.pop('load', False):
+                perfix = self.sks['load_perfix']
+                epoch = self.sks['load_epoch']
+                self.model = rnn_feed.Feed.load(perfix, epoch, **self.kwargs)
+                self.model.begin_epoch=0
+            else:
+                self.model = rnn_feed.Feed(self.net, **self.kwargs)
 
         else:
             if self.sks.pop('load', False):
@@ -349,8 +355,25 @@ class Solver():
             X = self.train_data
             self.lgr.warning('No Eval Data, Using Training Data')
 
-        out = self.model.predict(X, return_data=True)
+        # if not train, directly predict, -> init model
+        if self.model is None:
+            for term in ['y', 'eval_data', 'logger', 'work_load_list', 'monitor', 'marks','e_marks']:
+                if term in self.kwargs.keys():
+                   self.kwargs.pop(term)
+            self._init_model()
 
+        if self.model.arg_params is None:
+            d = X.provide_data
+            l = X.provide_label
+            self.model._init_params(dict(d + l))
+
+        out = self.model.predict(X, return_data=True)
+        out=list(out)
+        if self.is_rnn:
+            self.lgr.debug('Prediction Done, reshape rnn outputs')
+            for idx, array in enumerate(out):
+                out[idx] = array.reshape((-1,1,256,256))
+        
         N = out[0].shape[0]
 
         for idx in range(N):
@@ -360,7 +383,7 @@ class Solver():
             label = out[2][idx, 0]
             png = np.hstack([pred, gap, label])
 
-            self.lgr.debug('Prediction mean>>%f Img mean>>%f', pred.mean(), img.mean())
+            self.lgr.debug('Prediction mean>>%f Label mean>>%f', pred.mean(), label.mean())
 
             fig = plt.figure()
             fig.add_subplot(121).imshow(png)

@@ -3,7 +3,7 @@ from rnn_metric import RnnM
 import ipt
 import mxnet as mx
 from rnn_feed import Feed
-from utils import *
+from HeartDeepLearning.my_utils import *
 import matplotlib.pyplot as plt
 from rnn_iter import RnnIter
 import matplotlib.image as mpimg
@@ -87,11 +87,25 @@ def test_callback():
     print type(c.batch), c.batch
 
 
-def test_iii():
-    rootdir = '/home/zijia/HeartDeepLearning/Net/RNN/Result/24-23:25:29'
+def test_iter_bs():
+    from rnn_load import get
+    output = get(bs=2)
+    train = output['train']
+    for zoo in train:
+        print '___________'
+        for databatch in zoo:
+            print databatch.data[0].shape
+
+    train.reset()
+    print 'reset'
+    for zoo in train:
+        print '___________'
+        for databatch in zoo:
+            print databatch.data[0].shape
+
     
 
     
 if __name__ == '__main__':
-    test_callback()
+    test_iter_bs()
     # test_net()

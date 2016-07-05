@@ -71,6 +71,7 @@ class RnnIter(DataIter):
             raise StopIteration
 
     def get_zoo(self):
+        """in zoo, each DataBatch has pic of one time step of sample of #batch_size """
         assert(self.cursor < self.num_data), "DataIter needs reset."
         zoo = []
         for i in range(self.num_t):

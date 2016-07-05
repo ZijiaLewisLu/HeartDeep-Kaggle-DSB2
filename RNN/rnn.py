@@ -54,12 +54,11 @@ def rnn(dropout=0., logistic=True):
     )
 
     reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, 1, 256, 256))
-
+    c = mx.sym.BlockGrad(data=c)
+    h = mx.sym.BlockGrad(data=h)
 
     if not logistic:
         sgmd = mx.sym.Activation(data=reshape2, act_type='sigmoid')
-        c = mx.sym.BlockGrad(data=c)
-        h = mx.sym.BlockGrad(data=h)
         net = mx.sym.Custom(data=sgmd, name='softmax', op_type='sfmx')
         # net = mx.sym.MakeLoss(data = net, name='loss')
     else:

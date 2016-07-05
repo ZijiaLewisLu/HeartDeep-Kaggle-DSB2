@@ -5,6 +5,7 @@ import mxnet as mx
 # import create_train_modle as old
 # import load_data as load
 from my_utils import *
+from my_layer import *
 
 
 ''' pm refers to Params'''
