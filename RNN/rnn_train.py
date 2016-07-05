@@ -7,7 +7,7 @@ from rnn_load import get
 
 PARAMS={
     'ctx':mu.gpu(2),
-    'learning_rate':6,
+    'learning_rate':5,
     'num_epoch':15,
     'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
 }
@@ -49,7 +49,8 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 40
+    PARAMS['num_epoch'] = 10
+    PARAMS['learning_rate'] = 15
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

@@ -93,7 +93,7 @@ class Sfmx(mx.operator.CustomOp):
 
         grad_not = - grad_is
 
-        out = - is_label * grad_is - not_label * grad_not
+        out =  - is_label * grad_is - not_label * grad_not
 
         self.assign(in_grad[0], req[0], out)
 

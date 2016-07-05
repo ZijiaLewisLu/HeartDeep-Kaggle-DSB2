@@ -31,7 +31,7 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 
     out = u.get(6,small=True, aug=True) 
     net = cnn_net(
-        #use_logis=False
+        use_logis=False
         )
 
     param['eval_data'] = out['val'] 
