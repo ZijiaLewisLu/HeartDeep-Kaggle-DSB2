@@ -36,7 +36,7 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 
     s = Solver(net, train, sv, **param)
     s.train()
-    # s.predict()
+    s.predict()
     s.all_to_png()
     s.save_best_model()
     s.plot_process()
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 4
+    PARAMS['num_epoch'] = 40
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

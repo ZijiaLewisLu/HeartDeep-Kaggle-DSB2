@@ -77,30 +77,22 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
 
         executor_manager.forward(is_train=is_train)
 
-        c = []
-        h = []
-        pred = []
         c_mean = 0
         h_mean = 0
+        count  = 0
         for ex in executor_manager.curr_execgrp.train_execs:
             out = ex.outputs
-            print 'c, mean', out[1].asnumpy().mean()
-            print 'h, mean', out[2].asnumpy().mean()
-
             #ccc = out[1].context
             #c.append(mx.nd.array(out[1].asnumpy(),ctx=ccc))
             #ccc = out[2].context
             #h.append(mx.nd.array(out[2].asnumpy(),ctx=ccc))
-            pred.append(out[0])
 
             c_mean += out[1].asnumpy().mean()
-            h_mean += out[2].asnumpy().mean()
+            h_mean += out[2].asnumpy().mean()   
+            count  += 1     
         
-        pred = pred[0]
-        
-        
-        logger.debug('mean of c -> %f', c_mean/len(c))
-        logger.debug('mean of h -> %f', h_mean/len(h))
+        logger.debug('mean of c -> %f', c_mean/count)
+        logger.debug('mean of h -> %f', h_mean/count)
 
         
         if is_train and m > 0:
