@@ -4,11 +4,13 @@ import numpy as np
 from copy import copy
 
 space = np.random.randn(10)*0.18+1
+print space
 img_all = []
 label_all= []
 for s in space:
     require = copy(RE)
     require[0] = [ int(round(n*s)) for n in require[0] ]
+    require[1] = [ int(round(n*s)) for n in require[1] ]
     center_scale = np.random.choice(space, 1)
     center = (int(round(256*center_scale)), int(round(256*center_scale)))
     print center, require
