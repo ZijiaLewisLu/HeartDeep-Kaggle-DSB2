@@ -51,24 +51,28 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
         #load in data
         executor_manager.load_data_batch(data_batch)
 
-        data_targets = [[e.arg_dict[name] for i, e in enumerate(executor_manager.curr_execgrp.train_execs)]
-                                                        for name in ['c', 'h']]
-        if t==0:
-            c = []
-            h = []
-            for tg in data_targets[0]:
-                ccc = tg.context
-                shape = tg.shape
-                c.append(nd.zeros(shape, ctx=ccc))
+        # no need to load in c, h anymore
+        # data_targets = [[e.arg_dict[name] for i, e in enumerate(executor_manager.curr_execgrp.train_execs)]
+        #                                                 for name in ['c', 'h']]
+        # print '_________________________in________________________'
+        # if t==0:
+        #     c = []
+        #     h = []
+        #     for tg in data_targets[0]:
+        #         ccc = tg.context
+        #         shape = tg.shape
+        #         c.append(nd.zeros(shape, ctx=ccc))
 
-            for tg in data_targets[1]:
-                ccc = tg.context
-                shape = tg.shape
-                h.append(nd.zeros(shape, ctx=ccc))
-        
-        for idx in range(len(c)):
-            _load_general([c[idx]], [data_targets[0][idx]])
-            _load_general([h[idx]], [data_targets[1][idx]])
+        #     for tg in data_targets[1]:
+        #         ccc = tg.context
+        #         shape = tg.shape
+        #         h.append(nd.zeros(shape, ctx=ccc))
+
+        # for idx in range(len(c)):
+        #     print 'in c mean', c[idx].asnumpy().mean()
+        #     print 'in h mean', h[idx].asnumpy().mean()
+        #     _load_general([c[idx]], [data_targets[0][idx]])
+        #     _load_general([h[idx]], [data_targets[1][idx]])
         
 
         executor_manager.forward(is_train=is_train)
@@ -80,8 +84,13 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
         h_mean = 0
         for ex in executor_manager.curr_execgrp.train_execs:
             out = ex.outputs
-            c.append(out[1])
-            h.append(out[2])
+            print 'c, mean', out[1].asnumpy().mean()
+            print 'h, mean', out[2].asnumpy().mean()
+
+            #ccc = out[1].context
+            #c.append(mx.nd.array(out[1].asnumpy(),ctx=ccc))
+            #ccc = out[2].context
+            #h.append(mx.nd.array(out[2].asnumpy(),ctx=ccc))
             pred.append(out[0])
 
             c_mean += out[1].asnumpy().mean()
@@ -437,7 +446,6 @@ class Feed(FeedForward):
 
     def predict(self, X, num_batch=None, return_data=False, reset=True):
         """Overwrite"""
-        
         X = self._init_iter(X, None, is_train=False)
 
         if reset:
@@ -458,28 +466,14 @@ class Feed(FeedForward):
             preds = []
             for t, data_batch in enumerate(batch_zoo):
 
-                #load in data
-                _data_batch(data_batch, data_arrays[0])
-
-                data_targets = data_arrays[1:]
-                if t==0:
-                    c, h  = data_targets[:]
-                print type(c), type(h)
-
-                _load_general([c], data_targets[0])
-                _load_general([h], data_targets[1])
-                
+                _load_data(data_batch, [data_arrays[0]])                
                 self._pred_exec.forward(is_train=False)
-
-                # process output                    
-                out = self._pred_exec.outputs
-                c = out[1]
-                h = out[2]
-                pred = out[0]
-
+                
+                pred = self._pred_exec.outputs[0]
                 real_size = batch_size - data_batch.pad
-                preds.append(pred[:real_size].asnumpy()[None,:,:,:,:])
+                preds.append(pred[:real_size].asnumpy()[None,:,:,:,:]) # reshape to 1*N*1*256*256
 
+            assert len(preds)==30
             in_one_preds= np.concatenate(preds, axis=0)
             pred_list.append(in_one_preds)
 
@@ -490,8 +484,8 @@ class Feed(FeedForward):
         prediction = np.concatenate(pred_list, axis=1)
 
         if return_data:
-            data = X.data
-            label = X.label
+            data = X.data[0][1]
+            label = X.label[0][1]
             return prediction, data, label
         else:
             return prediction

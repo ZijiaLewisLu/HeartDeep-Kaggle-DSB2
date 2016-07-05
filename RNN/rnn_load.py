@@ -3,7 +3,7 @@ import mxnet as mx
 import pickle as pk
 import numpy as np
 
-fs = [
+files = [
 '/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:11.pk',
 '/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:12.pk',
 '/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:13.pk',
@@ -51,7 +51,9 @@ def create_cnn_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
 
     return train, val
 
-def get(bs=1, rate=0.1):
+def get(bs=1, fs=files, rate=0.1, small=False):
+    if small:
+        fs = fs[:1]
     imgs, labels = load_rnn_pk(fs)
     data = prepare_set(imgs, labels, rate=rate)
     data = list(data)

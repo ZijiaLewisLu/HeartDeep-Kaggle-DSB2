@@ -43,13 +43,13 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 
 if __name__ == '__main__':
     # temperal setting
-    SOLVE['load'] = True
+    SOLVE['load'] = False
     SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/RNN/Result/<4-22:15:11>TEST[E10]/[ACC-0.03425 E9]'
     SOLVE['load_epoch'] = 9
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 10
+    PARAMS['num_epoch'] = 4
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

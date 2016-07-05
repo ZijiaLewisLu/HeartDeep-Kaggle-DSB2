@@ -33,7 +33,6 @@ def GPU_availability():
       index += 1
   return list(itertools.chain(*[performance[key] for key in reversed(sorted(performance.keys()))]))
 
-
 def gpu(num):
     gs = GPU_availability()[:num]
     return [ mx.context.gpu(g) for g in gs ]
