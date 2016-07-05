@@ -241,7 +241,9 @@ class Maker(object):
         x, y = center
         x = x + np.random.randn()*4 - hx/2
         y = y + np.random.randn()*4 - hy/2
-        
+        x = int(round(x))
+        y = int(round(y))
+       
         #make image
         mask = (heart!=0)
         img = self.background.copy()
@@ -294,9 +296,8 @@ class Maker(object):
     
     def save(self, perfix='', downsample = False):
         #TODO downsample
-        now = time.ctime(int(time.time()))
-        now = now.split(' ')
-        now = now[2]+'-'+now[3]
+        from HeartDeepLearning.my_utils import parse_time
+        now = parse_time()
         perfix = perfix+'[%d]'%(len(self.imgs))+now
         #os.mkdir(folder)
         
