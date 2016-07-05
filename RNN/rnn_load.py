@@ -4,16 +4,8 @@ import pickle as pk
 import numpy as np
 
 files = [
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:11.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:12.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:13.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:14.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:15.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:16.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:17.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:18.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]30-23:49:19.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/New_DATA/[30]-4.pk',
+'/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<5-12:20:21>.pk',
+'/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<5-12:21:07>.pk',
 ]
 
 def load_rnn_pk(fnames):
@@ -24,8 +16,12 @@ def load_rnn_pk(fnames):
             img = pk.load(f)
             ll  = pk.load(f)
 
-        img = img[None,:,None,:,:]
-        ll  = ll[None,:,None,:,:]
+        if len(img.shape)==3:
+            img = img[None,:,None,:,:] # N*T*1*256*256
+            ll  = ll[None,:,None,:,:] 
+        elif len(img.shape)==5:
+            img = np.transpose(img, axes=(1,0,2,3,4)) # T*N => N*T
+            ll = np.transpose(ll, axes=(1,0,2,3,4))
 
         if imgs is None:
             imgs = img
@@ -55,6 +51,7 @@ def get(bs=1, fs=files, rate=0.1, small=False):
     if small:
         fs = fs[:1]
     imgs, labels = load_rnn_pk(fs)
+
     data = prepare_set(imgs, labels, rate=rate)
     data = list(data)
     for i, a in enumerate(data):

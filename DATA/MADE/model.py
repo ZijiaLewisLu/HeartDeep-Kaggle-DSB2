@@ -257,7 +257,7 @@ class Maker(object):
         return img, ll
     
     
-    def generate(self, num_pic, angle, base=6, plot=False, center=None, shape=None):
+    def generate(self, num_pic, angle, base=6, plot=False, center=None, shape=None, downsample = False):
         shape = 300 if shape is None else shape
         if not isinstance(shape, tuple):
             shape = int(round(shape+np.random.randn()*shape/100))
@@ -290,27 +290,25 @@ class Maker(object):
             img, label = self.combine(img,label,center)
             self.imgs.append(img)
             self.labels.append(label)
+
+            if downsample:
+                for i, p in enumerate(self.imgs):
+                    self.imgs[i] = t.resize(p, (256,256))
+                for j, l in enumerate(self.labels):
+                    self.labels[j] = t.resize(l, (256,256))
             
             if plot:
                 show(img)
                 show(label)
          
     
-    def save(self, perfix='', downsample = False):
+    def save(self, perfix=''):
         #TODO downsample
         now = time.ctime(int(time.time()))
         now = now.split(' ')
         now = now[2]+'-'+now[3]
         perfix = perfix+'[%d]'%(len(self.imgs))+now
         #os.mkdir(folder)
-        
-        if downsample:
-            for i, p in enumerate(self.imgs):
-                self.imgs[i] = t.resize(p, (256,256))
-            #raise NotImplementedError('Not downsample')
-            for j, l in enumerate(self.labels):
-                self.labels[j] = t.resize(l, (256,256))
-
 
         imgs = [  i[None,:,:] for i in self.imgs ]
         labels = [ l[None,:,:] for l in self.labels ]

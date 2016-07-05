@@ -15,7 +15,7 @@ for s in space:
 
     m = Maker(require)   
     a = np.random.randint(180)
-    m.generate(30,a, center=center)
+    m.generate(30,a, center=center, downsample=True)
         
     img = [ i[None,None,None,:,:] for i in m.imgs ]
     label = [ l[None,None,None,:,:] for l in m.labels]
@@ -26,6 +26,8 @@ for s in space:
 
 img_all = np.concatenate(img_all, axis=1)
 label_all = np.concatenate(label_all,axis=1)
+
+print img_all.shape
 
 import pickle as pk
 from HeartDeepLearning.my_utils import parse_time
