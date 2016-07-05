@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 import skimage.draw as d
 import skimage.transform as t
 import time
-RE = [(100,20),(105,66)]
+RE = [
+    [100,20], # outter radius and width of circle
+    [105,66]  # h and w of ellipse
+    ]
 INNER = 130
 OUTER = 80
 
@@ -19,7 +22,8 @@ class Heart():
         self.base_lv_radius, self.base_lv_thick = RE[0]
         self.base_e_h, self.base_e_w = RE[1]
 
-        self.v = 2*self.base_e_h +20
+        v = max(self.base_e_h, self.base_lv_radius)
+        self.v = 2*v +20
         self.h = 2*self.base_lv_radius + self.base_e_w + 20
         self.canva = np.zeros((self.v,self.h))
 
@@ -255,7 +259,7 @@ class Maker(object):
         return img, ll
     
     
-    def generate(self, num_pic, angle, base=6, plot=False, center=None, shape=None):
+    def generate(self, num_pic, angle, base=6, plot=False, center=None, shape=None, downsample = False):
         shape = 300 if shape is None else shape
         if not isinstance(shape, tuple):
             shape = int(round(shape+np.random.randn()*shape/100))
@@ -288,26 +292,24 @@ class Maker(object):
             img, label = self.combine(img,label,center)
             self.imgs.append(img)
             self.labels.append(label)
+
+            if downsample:
+                for i, p in enumerate(self.imgs):
+                    self.imgs[i] = t.resize(p, (256,256))
+                for j, l in enumerate(self.labels):
+                    self.labels[j] = t.resize(l, (256,256))
             
             if plot:
                 show(img)
                 show(label)
          
     
-    def save(self, perfix='', downsample = False):
+    def save(self, perfix=''):
         #TODO downsample
         from HeartDeepLearning.my_utils import parse_time
         now = parse_time()
         perfix = perfix+'[%d]'%(len(self.imgs))+now
         #os.mkdir(folder)
-        
-        if downsample:
-            for i, p in enumerate(self.imgs):
-                self.imgs[i] = t.resize(p, (256,256))
-            #raise NotImplementedError('Not downsample')
-            for j, l in enumerate(self.labels):
-                self.labels[j] = t.resize(l, (256,256))
-
 
         imgs = [  i[None,:,:] for i in self.imgs ]
         labels = [ l[None,:,:] for l in self.labels ]
