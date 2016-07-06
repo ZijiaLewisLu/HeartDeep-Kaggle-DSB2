@@ -9,12 +9,13 @@ label_all= []
 for s in space:
     require = copy(RE)
     require[0] = [ int(round(n*s)) for n in require[0] ]
+    require[1] = [ int(round(n*s)) for n in require[1] ]
     center_scale = np.random.choice(space, 1)
     center = (int(round(256*center_scale)), int(round(256*center_scale)))
     print center, require
 
     m = Maker(require)   
-    a = np.random.randint(180)
+    a = np.random.randint(360)
     m.generate(30,a, center=center, downsample=True)
         
     img = [ i[None,None,None,:,:] for i in m.imgs ]
