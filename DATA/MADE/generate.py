@@ -1,5 +1,5 @@
-from model import Heart, Maker
-from model import RE
+from maker import Heart, Maker
+from maker import RE
 import numpy as np
 from copy import copy
 
@@ -12,12 +12,12 @@ for s in space:
     require[0] = [ int(round(n*s)) for n in require[0] ]
     require[1] = [ int(round(n*s)) for n in require[1] ]
     center_scale = np.random.choice(space, 1)
-    center = (int(round(256*center_scale)), int(round(256*center_scale)))
+    center = (int(round(128*center_scale)), int(round(128*center_scale)))
     print center, require
 
     m = Maker(require)   
     a = np.random.randint(360)
-    m.generate(30,a, center=center, downsample=True)
+    m.generate(30,a, center=center)
         
     img = [ i[None,None,None,:,:] for i in m.imgs ]
     label = [ l[None,None,None,:,:] for l in m.labels]
@@ -30,6 +30,7 @@ img_all = np.concatenate(img_all, axis=1)
 label_all = np.concatenate(label_all,axis=1)
 
 print img_all.shape
+assert img_all.shape[-2:] == (256,256)
 
 import pickle as pk
 from HeartDeepLearning.my_utils import parse_time
