@@ -12,7 +12,6 @@ from PIL import Image
 import copy
 import HeartDeepLearning.DATA.image_transform as tf
 import numpy as np
-import settings
 
 # Credit to Gaiyu
 def GPU_availability():

@@ -304,12 +304,14 @@ class Solver():
             from RNN import rnn_feed
 
             if self.sks.pop('load', False):
+                self.lgr.info('Load from Old RNN')
                 perfix = self.sks['load_perfix']
                 epoch = self.sks['load_epoch']
                 self.model = rnn_feed.Feed.load(perfix, epoch, **self.kwargs)
                 self.model.begin_epoch=0
 
             elif self.sks.pop('load_from_cnn',False):
+                self.lgr.info('Load from Old CNN')
                 perfix = self.sks['load_perfix']
                 epoch = self.sks['load_epoch']
                 shape = dict(self.train_data.provide_data+self.train_data.provide_label)
@@ -321,6 +323,7 @@ class Solver():
 
         else:
             if self.sks.pop('load', False):
+                self.lgr.info('Load from Old CNN')
                 perfix = self.sks['load_perfix']
                 epoch = self.sks['load_epoch']
                 self.model = mx.model.FeedForward.load(perfix, epoch, **self.kwargs)

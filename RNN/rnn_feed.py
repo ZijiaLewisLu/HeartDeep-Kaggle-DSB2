@@ -24,7 +24,7 @@ from mxnet.model import *
 from mxnet.model import _create_kvstore, _initialize_kvstore, _update_params, _update_params_on_kvstore
 from mxnet.executor_manager import _load_general, _load_data
 
-from HeartDeepLearning.my_utils import parse_time, plot_save
+from HeartDeepLearning.my_utils import parse_time, save_img
 
 import matplotlib.pyplot as plt
 import pickle as pk
