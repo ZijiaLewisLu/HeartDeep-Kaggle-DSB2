@@ -6,8 +6,8 @@ import skimage.draw as d
 import skimage.transform as t
 import time
 RE = [
-    [100,20], # outter radius and width of circle
-    [105,66]  # h and w of ellipse
+    [50,10], # outter radius and width of circle
+    [52,33]  # h and w of ellipse
     ]
 INNER = 130
 OUTER = 80
@@ -203,11 +203,12 @@ class Heart():
 
 class Maker(object):
     
-    def __init__(self, re, small=False):
+    def __init__(self, re, small=True):
         """RE has the info for LV and E"""
         self.RE = re
         self.heart = Heart(re)
-        self.background = misc.imread('background_small.jpg', mode='P') if small else misc.imread('background.jpg', mode='P')
+        self.background = misc.imread('background_small.jpeg', mode='P') if small else misc.imread('background.jpg', mode='P')
+        self.small = small
     
     def rotate(self, img, label, angle):
         assert img.shape==label.shape
@@ -245,7 +246,9 @@ class Maker(object):
         x, y = center
         x = x + np.random.randn()*4 - hx/2
         y = y + np.random.randn()*4 - hy/2
-        
+        x = int(round(x))
+        y = int(round(y))
+       
         #make image
         mask = (heart!=0)
         img = self.background.copy()
@@ -304,9 +307,8 @@ class Maker(object):
     
     def save(self, perfix=''):
         #TODO downsample
-        now = time.ctime(int(time.time()))
-        now = now.split(' ')
-        now = now[2]+'-'+now[3]
+        from HeartDeepLearning.my_utils import parse_time
+        now = parse_time()
         perfix = perfix+'[%d]'%(len(self.imgs))+now
         #os.mkdir(folder)
 
@@ -324,7 +326,7 @@ class Maker(object):
         
 if __name__ == '__main__':
 
-    RE = [(100,20),(105,66)]
+    RE = [(50,10),(53,33)]
     g = Maker(RE)
     g.generate(30, 45)
     g.save(downsample=True)
