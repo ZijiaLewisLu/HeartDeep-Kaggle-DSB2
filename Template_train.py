@@ -1,24 +1,12 @@
 import ipt, logging
 import mxnet as mx
-from cnn import cnn_net
-import my_utils as u
+import my_utils as mu
 from solver import Solver
 import os
-from HeartDeepLearning.RNN.rnn_load import load_rnn_pk, files
+from settings import PARAMS, SOLVE
 
-PARAMS={
-    'ctx':u.gpu(2),
-    'learning_rate':3,
-    'num_epoch':15,
-    #'optimizer':'adam',
-    'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
-    'wd':1,
-}
-
-SOLVE = {
-    'save_best':True,
-    'is_rnn'   :False,  
-}
+from ... import ... as net
+from ... import ... as get
 
 def train(param=PARAMS, sv=SOLVE, small=False):
 
@@ -30,15 +18,8 @@ def train(param=PARAMS, sv=SOLVE, small=False):
     else:
         sv['name'] += input_var
 
-
-    #out = u.get(6,small=True, aug=True) 
-    imgs, ll = load_rnn_pk(files)
-    imgs = imgs.reshape((-1,1,256,256))
-    ll   = ll.reshape((-1,1,256,256))
-    datas = u.prepare_set(imgs, ll)
-
-    out = u.create_iter(*datas, batch_size=5)
-    net = cnn_net(
+    out = get(6, small=True, aug=True) 
+    net = net(
         use_logis=True
         )
 
@@ -59,7 +40,7 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 30
+    #PARAMS['num_epoch'] = 30
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

@@ -12,6 +12,7 @@ from PIL import Image
 import copy
 import HeartDeepLearning.DATA.image_transform as tf
 import numpy as np
+import settings
 
 # Credit to Gaiyu
 def GPU_availability():
@@ -85,7 +86,7 @@ def parse_time():
     return '<'+now[-3]+'-'+now[-2]+'>'
 
 
-def plot_save(img, name):
+def save_img(img, name):
     plt.imshow(img)
     if 'png' not in name:
         name = name + '.png'
