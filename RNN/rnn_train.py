@@ -7,7 +7,7 @@ from rnn_load import get
 
 PARAMS={
     'ctx':mu.gpu(2),
-    'learning_rate':6,
+    'learning_rate':5,
     'num_epoch':15,
     'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
 }
@@ -36,7 +36,7 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 
     s = Solver(net, train, sv, **param)
     s.train()
-    # s.predict()
+    s.predict()
     s.all_to_png()
     s.save_best_model()
     s.plot_process()
@@ -44,12 +44,14 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 if __name__ == '__main__':
     # temperal setting
     SOLVE['load'] = False
-    SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/RNN/Result/<4-22:15:11>TEST[E10]/[ACC-0.03425 E9]'
-    SOLVE['load_epoch'] = 9
+    SOLVE['load_from_cnn'] = True
+    SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/CNN/Result/<0Save>/<1-17:12:45>[E40]/[ACC-0.92900 E39]'
+    SOLVE['load_epoch'] = 39
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 4
+    PARAMS['num_epoch'] = 40
+    PARAMS['learning_rate'] = 20
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

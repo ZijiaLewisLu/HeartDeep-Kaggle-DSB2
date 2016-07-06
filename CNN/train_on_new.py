@@ -4,6 +4,7 @@ from cnn import cnn_net
 import my_utils as u
 from solver import Solver
 import os
+from HeartDeepLearning.RNN.rnn_load import load_rnn_pk, files
 
 PARAMS={
     'ctx':u.gpu(2),
@@ -29,14 +30,20 @@ def train(param = PARAMS, sv=SOLVE, small=False):
         sv['name'] += input_var
 
 
-    out = u.get(6,small=True, aug=True) 
+    #out = u.get(6,small=True, aug=True) 
+    imgs, ll = load_rnn_pk(files)
+    imgs = imgs.reshape((-1,1,256,256))
+    ll   = ll.reshape((-1,1,256,256))
+    datas = u.prepare_set(imgs, ll)
+
+    out = u.create_iter(*datas, batch_size=5)
     net = cnn_net(
-        use_logis=False
+        use_logis=True
         )
 
-    param['eval_data'] = out['val'] 
+    param['eval_data'] = out[1] 
   
-    s = Solver(net, out['train'], sv, **param)
+    s = Solver(net, out[0], sv, **param)
     s.train()
     s.predict()
     s.all_to_png()
@@ -51,10 +58,8 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 40
+    PARAMS['num_epoch'] = 200
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 
     train()
-
-    

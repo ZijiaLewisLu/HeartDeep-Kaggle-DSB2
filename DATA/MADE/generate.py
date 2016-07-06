@@ -4,6 +4,7 @@ import numpy as np
 from copy import copy
 
 space = np.random.randn(10)*0.18+1
+print space
 img_all = []
 label_all= []
 for s in space:

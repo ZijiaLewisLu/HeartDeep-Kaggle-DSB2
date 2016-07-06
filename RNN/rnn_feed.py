@@ -77,30 +77,22 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
 
         executor_manager.forward(is_train=is_train)
 
-        c = []
-        h = []
-        pred = []
         c_mean = 0
         h_mean = 0
+        count  = 0
         for ex in executor_manager.curr_execgrp.train_execs:
             out = ex.outputs
-            print 'c, mean', out[1].asnumpy().mean()
-            print 'h, mean', out[2].asnumpy().mean()
-
             #ccc = out[1].context
             #c.append(mx.nd.array(out[1].asnumpy(),ctx=ccc))
             #ccc = out[2].context
             #h.append(mx.nd.array(out[2].asnumpy(),ctx=ccc))
-            pred.append(out[0])
 
             c_mean += out[1].asnumpy().mean()
-            h_mean += out[2].asnumpy().mean()
+            h_mean += out[2].asnumpy().mean()   
+            count  += 1     
         
-        pred = pred[0]
-        
-        
-        logger.debug('mean of c -> %f', c_mean/len(c))
-        logger.debug('mean of h -> %f', h_mean/len(h))
+        logger.debug('mean of c -> %f', c_mean/count)
+        logger.debug('mean of h -> %f', h_mean/count)
 
         
         if is_train and m > 0:
@@ -214,6 +206,7 @@ def _train_rnn(
         # record acc
         acc_hist = []
 
+        logger.info('Starting New Epoch...')
         while True:
             do_reset = True
 
@@ -420,29 +413,16 @@ class Feed(FeedForward):
                   eval_batch_end_callback=eval_batch_end_callback)
         return model
 
-    def simple_pred(self, X):
-        raise NotImplemented('Not Ready, I am Shy')
-        if not isinstance(X, mx.nd.NDArray):
-            X = mx.nd.array(X)
-
-        N = X.shape[0]
-        c = h = mx.nd.zeros((N, self.rnn_hidden))
-
-        data_shapes = {'data': X.shape, 'c': (
-            N, self.rnn_hidden), 'h': (N, self.rnn_hidden)}
-
-        # for now only use the first device
-        pred_exec = self.symbol.simple_bind(
-            self.ctx[0], grad_req='null', **dict(data_shapes))
-        pred_exec.copy_params_from(self.arg_params, self.aux_params)
-
-        _load_general([X], pred_exec.arg_dict['data'])
-        _load_general([c], pred_exec.arg_dict['c'])
-        _load_general([h], pred_exec.arg_dict['h'])
-
-        pred_exec.forward(is_train=False)
-
-        return pred_exec.outputs
+    @staticmethod
+    def load_from_cnn(perfix, epoch, net, shape, ctx=None, **kwargs):
+        symbol, arg_params, aux_params = load_checkpoint(perfix, epoch)
+        for rm in ['full1_bias','full1_weight', 'full2_weight', 'full2_bias']:
+            arg_params.pop(rm)
+        model = Feed(net, ctx=ctx, begin_epoch=epoch, **kwargs)
+        model._init_params(shape)
+        model.arg_params.update(arg_params)
+        model.aux_params.update(aux_params)
+        return model
 
     def predict(self, X, num_batch=None, return_data=False, reset=True):
         """Overwrite"""
