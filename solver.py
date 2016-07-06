@@ -308,6 +308,14 @@ class Solver():
                 epoch = self.sks['load_epoch']
                 self.model = rnn_feed.Feed.load(perfix, epoch, **self.kwargs)
                 self.model.begin_epoch=0
+
+            elif self.sks.pop('load_from_cnn',False):
+                perfix = self.sks['load_perfix']
+                epoch = self.sks['load_epoch']
+                shape = dict(self.train_data.provide_data+self.train_data.provide_label)
+                self.model = rnn_feed.Feed.load_from_cnn(perfix, epoch, self.net, shape, **self.kwargs)
+                self.model.begin_epoch=0
+                
             else:
                 self.model = rnn_feed.Feed(self.net, **self.kwargs)
 

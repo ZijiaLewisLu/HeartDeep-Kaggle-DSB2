@@ -206,6 +206,7 @@ def _train_rnn(
         # record acc
         acc_hist = []
 
+        logger.info('Starting New Epoch...')
         while True:
             do_reset = True
 
@@ -412,29 +413,16 @@ class Feed(FeedForward):
                   eval_batch_end_callback=eval_batch_end_callback)
         return model
 
-    def simple_pred(self, X):
-        raise NotImplemented('Not Ready, I am Shy')
-        if not isinstance(X, mx.nd.NDArray):
-            X = mx.nd.array(X)
-
-        N = X.shape[0]
-        c = h = mx.nd.zeros((N, self.rnn_hidden))
-
-        data_shapes = {'data': X.shape, 'c': (
-            N, self.rnn_hidden), 'h': (N, self.rnn_hidden)}
-
-        # for now only use the first device
-        pred_exec = self.symbol.simple_bind(
-            self.ctx[0], grad_req='null', **dict(data_shapes))
-        pred_exec.copy_params_from(self.arg_params, self.aux_params)
-
-        _load_general([X], pred_exec.arg_dict['data'])
-        _load_general([c], pred_exec.arg_dict['c'])
-        _load_general([h], pred_exec.arg_dict['h'])
-
-        pred_exec.forward(is_train=False)
-
-        return pred_exec.outputs
+    @staticmethod
+    def load_from_cnn(perfix, epoch, net, shape, ctx=None, **kwargs):
+        symbol, arg_params, aux_params = load_checkpoint(perfix, epoch)
+        for rm in ['full1_bias','full1_weight', 'full2_weight', 'full2_bias']:
+            arg_params.pop(rm)
+        model = Feed(net, ctx=ctx, begin_epoch=epoch, **kwargs)
+        model._init_params(shape)
+        model.arg_params.update(arg_params)
+        model.aux_params.update(aux_params)
+        return model
 
     def predict(self, X, num_batch=None, return_data=False, reset=True):
         """Overwrite"""
