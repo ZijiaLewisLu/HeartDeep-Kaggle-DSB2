@@ -260,14 +260,7 @@ class Maker(object):
         return img, ll
     
     
-    def generate(self, num_pic, angle, base=6, plot=False, center=None, shape=None, downsample = False):
-        shape = 300 if shape is None else shape
-        if not isinstance(shape, tuple):
-            shape = int(round(shape+np.random.randn()*shape/100))
-        else:
-            shape = tuple([ int(round(x+np.random.randn()*x/100))
-                                                  for x in shape ])
-
+    def generate(self, num_pic, angle, base=6, plot=False, center=None, downsample = False):
             
         series, labels = self.heart.move(base, num_pic)
         self.imgs = []
@@ -275,20 +268,8 @@ class Maker(object):
         for i in range(num_pic):
             
             img, label = series[i], labels[i]
-            assert img.mean() > 0
-            if not isinstance(shape, tuple):
-                assert isinstance(shape, int), shape
-                s = shape
-                m_x = np.max(img.shape)
-                idx = np.argmax(img.shape)
-                scale = s/m_x
-                shape = [0,0]
-                shape[idx] = s
-                shape[1-idx] = int(round(img.shape[1-idx]*scale))
-                shape = tuple(shape)
-            
-            #print '{} to {}'.format(shape, img.shape)
-            #img = misc.imresize(img, shape)
+            assert img.mean() > 0            
+
             img, label = self.rotate(img, label, angle)
             img, label = self.combine(img,label,center)
             self.imgs.append(img)
@@ -306,11 +287,9 @@ class Maker(object):
          
     
     def save(self, perfix=''):
-        #TODO downsample
         from HeartDeepLearning.my_utils import parse_time
         now = parse_time()
         perfix = perfix+'[%d]'%(len(self.imgs))+now
-        #os.mkdir(folder)
 
         imgs = [  i[None,:,:] for i in self.imgs ]
         labels = [ l[None,:,:] for l in self.labels ]
@@ -322,7 +301,6 @@ class Maker(object):
         with open(perfix+'.pk','w') as f:
             pk.dump(imgs, f)
             pk.dump(labels, f)
-
         
 if __name__ == '__main__':
 

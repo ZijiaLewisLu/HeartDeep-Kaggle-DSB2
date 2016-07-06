@@ -58,7 +58,7 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 200
+    PARAMS['num_epoch'] = 30
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 
