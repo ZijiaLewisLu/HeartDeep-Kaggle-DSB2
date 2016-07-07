@@ -2,11 +2,21 @@ import ipt
 import mxnet as mx
 import pickle as pk
 import numpy as np
+import socket
 
-files = [
-'/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:28:45>.pk',
-'/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:29:01>.pk',
-]
+host = socket.gethostname()
+print host
+if host == 'NYUSH':
+    files = [
+                '/home/zijia/HeartDeepLearning/DATA/MADE/[T30,N10]<7-10:04:47>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/MADE/[T30,N10]<7-10:04:59>.pk',
+            ] 
+else:
+    
+    files = [
+               '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:28:45>.pk',
+               '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:29:01>.pk',
+            ]
 
 def load_rnn_pk(fnames):
     imgs = None

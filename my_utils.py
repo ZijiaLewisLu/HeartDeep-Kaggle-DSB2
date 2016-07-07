@@ -12,6 +12,12 @@ from PIL import Image
 import copy
 import HeartDeepLearning.DATA.image_transform as tf
 import numpy as np
+import matplotlib.pyplot as plt
+
+def show(img):
+    plt.imshow(img, cmap='gray')
+    plt.show()
+    plt.close()
 
 # Credit to Gaiyu
 def GPU_availability():
@@ -141,7 +147,7 @@ def prepare_set(img, label, rate=0.1):
 
     N = img.shape[0]
 
-    split = max(1,round(N*rate))
+    split = max(1,int(round(N*rate)))
 
     img_train, ll_train = img[split:], label[split:]
     img_val,   ll_val   = img[:split], label[:split]
