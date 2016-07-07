@@ -129,15 +129,16 @@ def load_pk(fname):
             ll = pk.load(f)
 
         #print '-mean'
-        img = img.astype(np.float64)
-        img -= img.mean(axis=0)
+        mean = img.mean(axis=(1,2)).astype(np.int64).reshape((-1,))
+        for i in range(len(mean)):
+            img[i] -= mean[i]
 
-        if img_all == None:
+        if img_all is None:
             img_all = img
         else:
             img_all = np.concatenate((img_all, img))
 
-        if label_all == None:
+        if label_all is None:
             label_all = ll
         else:
             label_all = np.concatenate((label_all, ll))

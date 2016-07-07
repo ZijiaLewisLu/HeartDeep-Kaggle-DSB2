@@ -12,7 +12,7 @@ PARAMS={
     'num_epoch':15,
     #'optimizer':'adam',
     'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
-    'wd':1,
+    #'wd':1,
 }
 
 SOLVE = {
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 30
+    PARAMS['num_epoch'] = 10
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

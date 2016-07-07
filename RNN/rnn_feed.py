@@ -437,35 +437,58 @@ class Feed(FeedForward):
         data_arrays = [self._pred_exec.arg_dict[name] for name in data_names]
         
         if return_data:
-            data_list = []
-            label_list = []
+            data_list = [ [] for _ in X.provide_data[:1] ]
+            label_list = [ [] for _ in X.provide_label ]
+
+        print len(self._pred_exec.outputs)
+        pred_list = [ [] for _ in self._pred_exec.outputs ]
+        lists = [pred_list, data_list, label_list] if return_data else [pred_list]
 
         i = 0
-        pred_list = []
         for batch_zoo in X:
-            preds = []
+            preds = [ [] for _ in self._pred_exec.outputs ]
+            if return_data:
+                datas=[ [] for _ in X.provide_data[:1] ]
+                labels=[ [] for _ in X.provide_label ]
+
             for t, data_batch in enumerate(batch_zoo):
 
                 _load_data(data_batch, [data_arrays[0]])                
                 self._pred_exec.forward(is_train=False)
                 
-                pred = self._pred_exec.outputs[0]
+                pred = self._pred_exec.outputs
                 real_size = batch_size - data_batch.pad
-                preds.append(pred[:real_size].asnumpy()[None,:,:,:,:]) # reshape to 1*N*1*256*256
 
-            assert len(preds)==30
-            in_one_preds= np.concatenate(preds, axis=0)
-            pred_list.append(in_one_preds)
+                for i, p in enumerate(pred):
+                    preds[i].append(p[:real_size].asnumpy())
+                if return_data:
+                    for j, d in enumerate(data_batch.data):
+                        datas[j].append(d[:real_size].asnumpy())
+                    for z, l in enumerate(data_batch.label):
+                        labels[z].append(l[:real_size].asnumpy())
+
+            combine = [preds, datas, labels] if return_data else [preds]
+            for c in combine:
+                for i, ps in enumerate(c):
+                    for p in ps:
+                        p = p.reshape((1,)+p.shape)
+                    c[i] = np.concatenate(ps,axis=0)
+
+            for to, small in zip(lists, combine):
+                for idx, target in enumerate(to):
+                    to[idx].append(small[idx])
 
             i += 1
             if num_batch is not None and i == num_batch:
                 break
 
-        prediction = np.concatenate(pred_list, axis=1)
-
+        for i, l in enumerate(lists):
+            for idx, item in enumerate(l):
+                l[idx] = np.concatenate(item,axis=1)
+            if len(l) == 1:
+                lists[i] = l[0]
+        
         if return_data:
-            data = X.data[0][1]
-            label = X.label[0][1]
-            return prediction, data, label
+            return lists
         else:
-            return prediction
+            return lists[0]
