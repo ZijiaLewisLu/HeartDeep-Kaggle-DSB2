@@ -7,6 +7,7 @@ def fetch_internal(net, val, perfix, epoch):
     net = net.get_internals()
     features = [ net[i] for i in range(len(net.list_outputs())) 
                     if net[i].name != 'data' and '_' not in net[i].name] 
+    names = [ _.name for _ in features ]
     net = mx.sym.Group(features)
          
     from mxnet.model import load_checkpoint
@@ -22,7 +23,7 @@ def fetch_internal(net, val, perfix, epoch):
     outputs = mu.predict_draw(model, iters['val'])
     print len(outputs[0])
 
-    return outputs
+    return outputs, names
 
 if __name__ == '__main__':
     perfix = '/home/zijia/HeartDeepLearning/CNN/Result/[ACC-0.93164 E29]' 

@@ -5,7 +5,6 @@ import numpy as np
 import socket
 
 host = socket.gethostname()
-print host
 if host == 'NYUSH':
     files = [
                 '/home/zijia/HeartDeepLearning/DATA/MADE/[T30,N10]<7-10:04:47>.pk',
