@@ -51,10 +51,10 @@ if __name__ == '__main__':
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 40
+    PARAMS['num_epoch'] = 2
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 
-    train()
+    train(small=True)
 
     

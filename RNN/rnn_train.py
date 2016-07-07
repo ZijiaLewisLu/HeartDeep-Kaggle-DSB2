@@ -43,18 +43,19 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 
 if __name__ == '__main__':
     # temperal setting
-    SOLVE['load'] = False
-    SOLVE['load_from_cnn'] = True
+    SOLVE['load'] = True
+    SOLVE['load_from_cnn'] = False
 
     SunnyCNN=('/home/zijia/HeartDeepLearning/CNN/Result/<0Save>/<1-17:12:45>[E40]/[ACC-0.92900 E39]', 39)
     NewCNN  =('/home/zijia/HeartDeepLearning/CNN/Result/<0Save>/<6-11:38:53>NewGood[E30]/[ACC-0.93164 E29]',29)
+    NewFromCnn=('/home/zijia/HeartDeepLearning/RNN/Result/<6-12:26:43>TEST[E10]/[ACC-0.17967 E9]',9)
 
-    SOLVE['load_perfix'], SOLVE['load_epoch'] = SunnyCNN
+    SOLVE['load_perfix'], SOLVE['load_epoch'] = NewFromCnn
     #SOLVE['use_logis'] = True
-    #SOLVE['block_bn'] = True
+    SOLVE['block_bn'] = True
     
     PARAMS['num_epoch'] = 10
-    PARAMS['learning_rate'] = 10
+    PARAMS['learning_rate'] = 20
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 

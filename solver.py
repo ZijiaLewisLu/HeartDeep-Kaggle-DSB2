@@ -52,8 +52,6 @@ class Solver():
         now = time.ctime(int(time.time()))
         now = now.split(' ')
         name = self.sks.pop('name', None)
-        #t = now[3].split(':')
-        #t = ':'.join(t[:2])
         self.name = '<' + now[-3] + '-' + now[-2] + '>'
         if name is not None:
             self.name += name
@@ -182,9 +180,7 @@ class Solver():
             for j, p in enumerate(ps):
                 # if necessary, fix beta in batch norm
                 if 'beta' in n and self.block_bn:
-                    # p = 0*p
-                    # params[3]['executor_manager'].param_arrays[i][j] = 0*p
-                    print 'check mean', params[3]['executor_manager'].param_arrays[i][j].asnumpy().mean()
+                    params[3]['executor_manager'].param_arrays[i][j][:] = 0*p
                 
                 if psum is None:
                     psum = p.asnumpy()
