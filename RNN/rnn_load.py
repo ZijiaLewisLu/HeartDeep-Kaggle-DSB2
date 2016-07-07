@@ -9,6 +9,7 @@ if host == 'NYUSH':
     files = [
                 '/home/zijia/HeartDeepLearning/DATA/MADE/[T30,N10]<7-10:04:47>.pk',
                 '/home/zijia/HeartDeepLearning/DATA/MADE/[T30,N10]<7-10:04:59>.pk',
+                #'/home/zijia/HeartDeepLearning/DATA/MADE/[T30,N10]<7-21:25:32>.pk',
             ] 
 else:
     
@@ -41,6 +42,13 @@ def load_rnn_pk(fnames):
             labels = ll
         else:
             labels = np.concatenate([labels,ll], axis=0)
+
+    print 'Substract Mean'
+    mean = imgs.mean(axis=(2,3,4)).astype(np.uint8)
+    i, j = mean.shape
+    for x in range(i):
+        for y in range(j):
+            imgs[x,y] -= mean[x,y]
 
     return imgs, labels
 

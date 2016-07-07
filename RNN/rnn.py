@@ -1,8 +1,8 @@
 import ipt
 import logging
 import mxnet as mx
-import my_net as n
-from my_utils import *
+import HeartDeepLearning.my_net as n
+from HeartDeepLearning.my_utils import *
 from rnn_feed import Feed
 from rnn_iter import RnnIter
 import matplotlib.pyplot as plt
