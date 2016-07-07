@@ -382,9 +382,10 @@ class Solver():
                 out[idx] = array.reshape((-1,1,256,256))
         
         N = out[0].shape[0]
+        H = out[0].shape[2]
 
         for idx in range(N):
-            gap = np.ones((256, 5))
+            gap = np.ones((H, 5))
             pred = out[0][idx, 0]
             img = out[1][idx, 0]
             label = out[2][idx, 0]

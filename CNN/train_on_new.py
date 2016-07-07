@@ -12,7 +12,7 @@ PARAMS={
     'num_epoch':15,
     #'optimizer':'adam',
     'initializer':mx.initializer.Xavier(rnd_type='gaussian'),
-    #'wd':1,
+    'wd':1,
 }
 
 SOLVE = {

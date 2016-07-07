@@ -1,6 +1,7 @@
 import ipt
 import mxnet as mx
 import HeartDeepLearning.my_utils as mu 
+from collections import OrderedDict
 
 def fetch_internal(net, val, perfix, epoch, is_rnn=False):
     
@@ -8,15 +9,18 @@ def fetch_internal(net, val, perfix, epoch, is_rnn=False):
 
         for _ in ['weight','bias','gamma','beta','blockgrad','data', 'label']:
             if _ in name:
+                print 'Abandoned:',name
                 return False
         #if name.startswith('_'):
         #    return False
         for _ in ['c','h']:
             if name==_:
+                print 'Abandoned:',name
                 return False
         return True
     
     net = net.get_internals()
+    print '\n', net.list_outputs(), '\n'
     features = [ net[i] for i in range(len(net.list_outputs())) if verify(net[i].name) ]
     names = [ _.name for _ in features ]
     net = mx.sym.Group(features)
@@ -30,7 +34,7 @@ def fetch_internal(net, val, perfix, epoch, is_rnn=False):
         from HeartDeepLearning.RNN import rnn_feed
         model = rnn_feed.Feed(net, ctx=mu.gpu(1), num_epoch=1, begin_epoch=0)
     
-    shape = dict(val.provide_data+val.provide_label)
+    shape = OrderedDict(val.provide_data+val.provide_label)
     model._init_params(shape)
     model.arg_params.update(arg)
     model.aux_params.update(aux)

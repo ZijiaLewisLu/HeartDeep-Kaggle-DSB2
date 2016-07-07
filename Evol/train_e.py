@@ -5,8 +5,8 @@ from solver import Solver
 import os
 from settings import PARAMS, SOLVE
 
-from ... import ... as net
-from ... import ... as get
+from e_net import e_net as net
+from load_e import get
 
 def train(param=PARAMS, sv=SOLVE, small=False):
 
@@ -18,12 +18,12 @@ def train(param=PARAMS, sv=SOLVE, small=False):
     else:
         sv['name'] += input_var
 
-    out = get(6, small=True, aug=True) 
-    net = net()
+    out = get(6, small=True, aug=False) 
+    sym = net()
 
-    param['eval_data'] = out['eval'] 
+    param['eval_data'] = out['val'] 
   
-    s = Solver(net, out['train'], sv, **param)
+    s = Solver(sym, out['train'], sv, **param)
     s.train()
     s.predict()
     s.all_to_png()
@@ -33,13 +33,13 @@ def train(param=PARAMS, sv=SOLVE, small=False):
 if __name__ == '__main__':
     # temperal setting
     #SOLVE['load'] = True
-    #SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/Net/CNN/Result/<1-15:28:48>[E40]/[ACC-0.92596 E38]'
-    #SOLVE['load_epoch'] = 38
+    #SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/Evol/Result/<8-01:28:54>TEST[E20]/[ACC-0.04717 E0]'
+    #SOLVE['load_epoch'] = 
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    #PARAMS['num_epoch'] = 30
+    PARAMS['num_epoch'] = 20
     # PARAMS['optimizer'] = 'adam'
-    # PARAMS['learning_rate'] = 1e-2
+    PARAMS['learning_rate'] = 5e-1
 
     train()

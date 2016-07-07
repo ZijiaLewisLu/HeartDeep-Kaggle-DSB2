@@ -225,8 +225,8 @@ def get(bs, small=False, return_raw=False, aug=False):
             '/home/zijia/HeartDeepLearning/DATA/PK/validate.pk',
         ]
 
-    img, train = load_pk(filename)
-    it, lt, iv, lv = prepare_set(img,train)
+    img, label = load_pk(filename)
+    it, lt, iv, lv = prepare_set(img,label)
 
     if aug:
         it, lt = augment_sunny(it,lt) 

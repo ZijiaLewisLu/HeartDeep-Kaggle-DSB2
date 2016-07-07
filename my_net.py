@@ -1,10 +1,5 @@
 import ipt
-# import minpy as minpy
 import mxnet as mx
-# import minpy.numpy as np
-# import create_train_modle as old
-# import load_data as load
-from my_utils import *
 from my_layer import *
 
 
