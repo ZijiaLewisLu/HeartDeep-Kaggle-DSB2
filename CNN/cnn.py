@@ -1,8 +1,8 @@
 import ipt, logging
 import mxnet as mx
-import my_net as n
-from my_utils import *
-from my_layer import *
+import HeartDeepLearning.my_net as n
+from HeartDeepLearning.my_utils import *
+from HeartDeepLearning.my_layer import *
 
 import os
 # os.environ['MXNET_ENGINE_TYPE'] = 'NaiveEngine'
