@@ -41,6 +41,7 @@ def fetch_internal(net, val, perfix, epoch, is_rnn=False):
     print 'Start Predict'
     outputs, img, label = mu.predict_draw(model, val)
     outputs = dict(zip(names, outputs))
+    print 'Done'
     return outputs, img, label
 
 if __name__ == '__main__':

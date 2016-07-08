@@ -32,14 +32,14 @@ def train(param=PARAMS, sv=SOLVE, small=False):
 
 if __name__ == '__main__':
     # temperal setting
-    #SOLVE['load'] = True
-    #SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/Evol/Result/<8-01:28:54>TEST[E20]/[ACC-0.04717 E0]'
-    #SOLVE['load_epoch'] = 
+    SOLVE['load'] = True
+    SOLVE['load_perfix'] = "Result/<8-10:10:18>TEST[E50]/[ACC-0.69643 E49]"
+    SOLVE['load_epoch'] = 49
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 10
+    PARAMS['num_epoch'] = 50
     # PARAMS['optimizer'] = 'adam'
-    PARAMS['learning_rate'] = 5e-1
+    PARAMS['learning_rate'] = 1
 
     train()
