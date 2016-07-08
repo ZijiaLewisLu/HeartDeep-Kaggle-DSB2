@@ -413,7 +413,6 @@ class Feed(FeedForward):
             data_list = [[] for _ in X.provide_data[:1]]
             label_list = [[] for _ in X.provide_label]
 
-        print len(self._pred_exec.outputs)
         pred_list = [[] for _ in self._pred_exec.outputs]
         lists = [pred_list, data_list,
                  label_list] if return_data else [pred_list]

@@ -55,7 +55,7 @@ if __name__ == '__main__':
     #SOLVE['block_bn'] = True
     
     PARAMS['num_epoch'] = 3
-    PARAMS['learning_rate'] = 10
+    PARAMS['learning_rate'] = 1
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 
