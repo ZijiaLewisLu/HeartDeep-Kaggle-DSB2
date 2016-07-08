@@ -43,7 +43,7 @@ class Solver():
         # self.draw_each = k.pop('draw_each', False)
         # whether save prediction to pk files
         # self.save_pred = k.pop('save_pred', False)
-        # self.save_best = k.pop('save_best', True)
+        self.save_best = self.sks.pop('save_best', True)
         self.block_bn = self.sks.pop('block_bn', False)
         self.is_rnn = self.sks.pop('is_rnn', False)
         self.lgr    = self.sks.pop('logger', None)
@@ -74,6 +74,7 @@ class Solver():
         # store kwargs
         self.kwargs = k
         self.origin_k = kwargs
+        self.origin_s = sks_bk
 
     def _init_log(self):
         logging.basicConfig(level=logging.DEBUG, filename=self.path+'LOG.txt', format='%(levelname)s:%(message)s')
@@ -225,7 +226,7 @@ class Solver():
         this_acc = np.sum(acc) / float(len(acc))
         self.lgr.info('E[%d] T acc: %f', epoch, this_acc)
 
-        if self.sks.pop('save_best',True) and \
+        if self.save_best and \
                 (self.best_param is None or this_acc > self.best_acc):
             self.best_param = (epoch, symbol, arg_params, aux_params)
             self.best_acc = this_acc
@@ -357,6 +358,11 @@ class Solver():
             self.model.fit(self.train_data, marks, logger = self.lgr, **kwords)
         else:
             self.model.fit(self.train_data, logger=self.lgr, **kwords)
+
+        self.all_to_png()
+        self.plot_process()
+        if self.save_best:
+            self.save_best_model()
 
     def predict(self):
         if 'eval_data' in self.origin_k.keys():

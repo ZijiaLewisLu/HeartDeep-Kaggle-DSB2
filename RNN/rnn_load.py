@@ -58,7 +58,7 @@ def load_rnn_pk(fnames):
 from HeartDeepLearning.my_utils import prepare_set
 from rnn_iter import RnnIter
 
-def create_cnn_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
+def create_rnn_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
     train = RnnIter(img, label=ll, batch_size=batch_size, last_batch_handle=last_batch_handle)
 
     # N = vimg.shape[1]
@@ -77,7 +77,7 @@ def get(bs=1, fs=files, rate=0.1, small=False):
     for i, a in enumerate(data):
         data[i] = np.transpose(a, axes=(1,0,2,3,4))
 
-    train, val = create_cnn_iter(*data,batch_size=bs)
+    train, val = create_rnn_iter(*data,batch_size=bs)
     T = imgs.shape[0]
     mark = np.ones((T)).astype(np.int)
     return {'train':train, 'val':val, 'marks':mark}

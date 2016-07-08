@@ -8,10 +8,10 @@ from rnn_iter import RnnIter
 import matplotlib.pyplot as plt
 from rnn_metric import RnnM
 
+def rnn_net(dropout=0., logistic=True, begin=None):
 
-def rnn(dropout=0., logistic=True):
-
-    begin = n.reshape1  # N, 1*256*256
+    if begin is None:
+        begin = n.reshape1  # N, 1*256*256
     num_hidden = 250
 
     if dropout > 0.:
@@ -88,7 +88,7 @@ def contruct_iter():
 if __name__ == '__main__':
     #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
-    net = rnn()
+    net = rnn_net()
     train, marks = contruct_iter()
     logging.debug(marks)
 

@@ -1,0 +1,25 @@
+#!/usr/bin/python2
+import os
+import sys
+import shutil
+
+for folder in sys.argv[1:]:
+    print 'Filtering %s'%folder
+    folder = os.path.join(folder, 'Result')
+    to_rm = []
+    for record in os.listdir(folder):
+        if record.startswith('<') and record.endswith(']') and 'save' not in record:
+            inter = os.path.join(folder,record)
+            files = os.listdir(inter)
+            if len(files)==2:
+                print record, files
+                to_rm.append(inter)
+    if len(to_rm)==0:
+        print 'No Folder to Remove'
+        continue
+    conform = raw_input('Remove Above? ')
+    if conform in ['Y', 'Yes', 'YES', 'yes']:
+        for rm in to_rm:
+            shutil.rmtree(rm)
+        print 'Done'
+    
