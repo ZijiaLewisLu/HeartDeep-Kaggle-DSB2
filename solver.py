@@ -181,6 +181,9 @@ class Solver():
                 # if necessary, fix beta in batch norm
                 if 'beta' in n and self.block_bn:
                     params[3]['executor_manager'].param_arrays[i][j][:] = 0*p
+                    mean = p.asnumpy().mean()
+                    if mean>=5 or mean<=-5:
+                        self.lgr.warning('%n is NOT right =>%f',n ,mean)
                 
                 if psum is None:
                     psum = p.asnumpy()
