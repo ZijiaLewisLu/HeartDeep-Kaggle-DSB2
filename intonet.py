@@ -98,9 +98,9 @@ def fetch_internal(net, val, perfix, epoch, is_rnn=False):
     return outputs, img, label
 
 if __name__ == '__main__':
-    perfix = '/home/zijia/HeartDeepLearning/CNN/Result/[ACC-0.93164 E29]'
-    epoch = 29
-    from cnn import cnn_net
+    perfix = '/home/zijia/HeartDeepLearning/CNN/Result/[ACC-0.93164 E29]' 
+    epoch  = 29
+    from CNN.cnn import cnn_net
     net = cnn_net()
     iters = mu.get(3, small=True)
-    fetch_internal(net, iters['val'], perfix, epoch)
+    fetch_internal(net, iters['val'], perfix, epoch )
