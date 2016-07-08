@@ -378,11 +378,13 @@ class Solver():
         out=list(out)
         if self.is_rnn:
             self.lgr.debug('Prediction Done, reshape rnn outputs')
-            for idx, array in enumerate(out):
-                out[idx] = array.reshape((-1,1,256,256))
+            
+            out[0] = out[0][0].reshape((-1,1,256,256))
+            out[1] = out[1].reshape((-1,1,256,256))
+            out[2] = out[2].reshape((-1,1,256,256))
         
-        N = out[0].shape[0]
-        H = out[0].shape[2]
+        N = out[0][0].shape[0]
+        H = out[0][0].shape[2]
 
         for idx in range(N):
             gap = np.ones((H, 5))

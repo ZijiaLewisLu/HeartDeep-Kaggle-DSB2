@@ -33,7 +33,7 @@ RNN_HIDDEN = 250
 
 
 def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
-             logger = None,
+             logger=None,
              monitor=None,
              update_on_kvstore=None,
              is_train=False):
@@ -41,6 +41,22 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
     if logger is None:
         logger = logging
 
+    data_targets = [[e.arg_dict[name] for i, e in enumerate(executor_manager.execgrp.train_execs)]
+                    for name in ['c', 'h']]
+    # for idx in range(len(data_targets[0])):
+    #     print 'data_targets c mean', data_targets[0][idx].asnumpy().mean()
+    #     print 'data_targets h mean', data_targets[1][idx].asnumpy().mean()
+    #     _load_general([c[idx]], [data_targets[0][idx]])
+    #     _load_general([h[idx]], [data_targets[1][idx]])
+
+    for i, tg in enumerate(executor_manager.execgrp.data_arrays[1:]):
+        for j, slice_array in enumerate(tg):
+            assert isinstance(slice_array, tuple)
+            array = slice_array[1]
+            replace = 0 * array
+            _load_general([replace], [array])
+
+    # Start Looping
     for t in range(len(marks)):
         m = marks[t]
         logger.debug('Time Step %d M %d', t, m)
@@ -51,60 +67,23 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
         #load in data
         executor_manager.load_data_batch(data_batch)
 
-        # no need to load in c, h anymore
-        # data_targets = [[e.arg_dict[name] for i, e in enumerate(executor_manager.curr_execgrp.train_execs)]
-        #                                                 for name in ['c', 'h']]
-        # print '_________________________in________________________'
-        # if t==0:
-        #     c = []
-        #     h = []
-        #     for tg in data_targets[0]:
-        #         ccc = tg.context
-        #         shape = tg.shape
-        #         c.append(nd.zeros(shape, ctx=ccc))
-
-        #     for tg in data_targets[1]:
-        #         ccc = tg.context
-        #         shape = tg.shape
-        #         h.append(nd.zeros(shape, ctx=ccc))
-
-        # for idx in range(len(c)):
-        #     print 'in c mean', c[idx].asnumpy().mean()
-        #     print 'in h mean', h[idx].asnumpy().mean()
-        #     _load_general([c[idx]], [data_targets[0][idx]])
-        #     _load_general([h[idx]], [data_targets[1][idx]])
-        
-
         executor_manager.forward(is_train=is_train)
 
-        c_mean = 0
-        h_mean = 0
-        count  = 0
-        for ex in executor_manager.curr_execgrp.train_execs:
+        for num, ex in enumerate(executor_manager.curr_execgrp.train_execs):
             out = ex.outputs
-            #ccc = out[1].context
-            #c.append(mx.nd.array(out[1].asnumpy(),ctx=ccc))
-            #ccc = out[2].context
-            #h.append(mx.nd.array(out[2].asnumpy(),ctx=ccc))
+            ccc = out[1]
+            hhh = out[2]
+            _load_general([ccc], [data_targets[0][num]])
+            _load_general([hhh], [data_targets[1][num]])
 
-            c_mean += out[1].asnumpy().mean()
-            h_mean += out[2].asnumpy().mean()   
-            count  += 1     
-        
-        logger.debug('mean of c -> %f', c_mean/count)
-        logger.debug('mean of h -> %f', h_mean/count)
-
-        
         if is_train and m > 0:
-            # print 'is_train and m>0', m
             executor_manager.backward()
 
             logger.debug('Updateing weight...')
             logger.debug('--------before update | grad check-------------')
             for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
                 logger.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
-            
-            
+
             if update_on_kvstore:
                 _update_params_on_kvstore(executor_manager.param_arrays,
                                           executor_manager.grad_arrays,
@@ -116,12 +95,8 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
                                updater=updater,
                                num_device=len(ctx),
                                kvstore=kvstore)
-            
-            
-            logger.debug('Done update')
 
-                # for i in executor_manager.param_arrays:
-                #     print 'after check', i[0].asnumpy().mean()
+            logger.debug('Done update')
 
         if monitor is not None:
             monitor.toc_print()
@@ -193,7 +168,6 @@ def _train_rnn(
     # Now start training
     train_data.reset()
 
-
     for epoch in range(begin_epoch, end_epoch):
         # Training phase
         tic = time.time()
@@ -237,7 +211,6 @@ def _train_rnn(
                             call(batch_end_params)
                     else:
                         batch_end_callback(batch_end_params)
-
 
                 # this epoch is done possibly earlier
                 if epoch_size is not None and nbatch >= epoch_size:
@@ -416,7 +389,7 @@ class Feed(FeedForward):
     @staticmethod
     def load_from_cnn(perfix, epoch, net, shape, ctx=None, **kwargs):
         symbol, arg_params, aux_params = load_checkpoint(perfix, epoch)
-        for rm in ['full1_bias','full1_weight', 'full2_weight', 'full2_bias']:
+        for rm in ['full1_bias', 'full1_weight', 'full2_weight', 'full2_bias']:
             arg_params.pop(rm)
         model = Feed(net, ctx=ctx, begin_epoch=epoch, **kwargs)
         model._init_params(shape)
@@ -435,27 +408,28 @@ class Feed(FeedForward):
         self._init_predictor(data_shapes)
         batch_size = X.batch_size
         data_arrays = [self._pred_exec.arg_dict[name] for name in data_names]
-        
+
         if return_data:
-            data_list = [ [] for _ in X.provide_data[:1] ]
-            label_list = [ [] for _ in X.provide_label ]
+            data_list = [[] for _ in X.provide_data[:1]]
+            label_list = [[] for _ in X.provide_label]
 
         print len(self._pred_exec.outputs)
-        pred_list = [ [] for _ in self._pred_exec.outputs ]
-        lists = [pred_list, data_list, label_list] if return_data else [pred_list]
+        pred_list = [[] for _ in self._pred_exec.outputs]
+        lists = [pred_list, data_list,
+                 label_list] if return_data else [pred_list]
 
         i = 0
         for batch_zoo in X:
-            preds = [ [] for _ in self._pred_exec.outputs ]
+            preds = [[] for _ in self._pred_exec.outputs]
             if return_data:
-                datas=[ [] for _ in X.provide_data[:1] ]
-                labels=[ [] for _ in X.provide_label ]
+                datas = [[] for _ in X.provide_data[:1]]
+                labels = [[] for _ in X.provide_label]
 
             for t, data_batch in enumerate(batch_zoo):
 
-                _load_data(data_batch, [data_arrays[0]])                
+                _load_data(data_batch, [data_arrays[0]])
                 self._pred_exec.forward(is_train=False)
-                
+
                 pred = self._pred_exec.outputs
                 real_size = batch_size - data_batch.pad
 
@@ -471,8 +445,8 @@ class Feed(FeedForward):
             for c in combine:
                 for i, ps in enumerate(c):
                     for p in ps:
-                        p = p.reshape((1,)+p.shape)
-                    c[i] = np.concatenate(ps,axis=0)
+                        p = p.reshape((1,) + p.shape)
+                    c[i] = np.concatenate(ps, axis=0)
 
             for to, small in zip(lists, combine):
                 for idx, target in enumerate(to):
@@ -484,10 +458,10 @@ class Feed(FeedForward):
 
         for i, l in enumerate(lists):
             for idx, item in enumerate(l):
-                l[idx] = np.concatenate(item,axis=1)
+                l[idx] = np.concatenate(item, axis=1)
             if len(l) == 1:
                 lists[i] = l[0]
-        
+
         if return_data:
             return lists
         else:

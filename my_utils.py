@@ -161,12 +161,12 @@ def prepare_set(img, label, rate=0.1):
     return img_train, ll_train, img_val, ll_val
 
 
-def create_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
+def create_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad', shuffle=True):
 
     train = mx.io.NDArrayIter(
         img,
         label=ll,
-        batch_size=batch_size, shuffle=True, last_batch_handle=last_batch_handle)
+        batch_size=batch_size, shuffle=shuffle, last_batch_handle=last_batch_handle)
 
     # rate = vimg.shape[0]/img.shape[0]
     # print 'val batch size', int(rate * batch_size)
@@ -174,7 +174,7 @@ def create_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
     val = mx.io.NDArrayIter(
         vimg,
         label=vll,
-        batch_size=batch_size, shuffle=False, last_batch_handle=last_batch_handle)
+        batch_size=batch_size, shuffle=shuffle, last_batch_handle=last_batch_handle)
 
     return train, val
 
