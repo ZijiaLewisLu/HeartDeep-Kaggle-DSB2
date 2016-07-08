@@ -30,7 +30,7 @@ def train(param = PARAMS, sv=SOLVE, small=False):
 
 
     net = rnn()
-    out = get(2, rate=0.2) 
+    out = get(2, rate=0.2, small=True) 
     train, param['eval_data'] = out['train'], out['val']  
     param['marks'] = param['e_marks'] = out['marks'] 
 
@@ -52,11 +52,11 @@ if __name__ == '__main__':
 
     SOLVE['load_perfix'], SOLVE['load_epoch'] = NewFromCnn
     #SOLVE['use_logis'] = True
-    SOLVE['block_bn'] = True
+    #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 10
-    PARAMS['learning_rate'] = 20
+    PARAMS['num_epoch'] = 3
+    PARAMS['learning_rate'] = 1
     # PARAMS['optimizer'] = 'adam'
     # PARAMS['learning_rate'] = 1e-2
 
-    train()
+    train(small=True)

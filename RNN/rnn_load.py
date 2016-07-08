@@ -17,6 +17,9 @@ else:
                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:28:45>.pk',
                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:29:01>.pk',
             ]
+    f10 = [
+            '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T10,N10]<8-11:42:11>.pk',
+            ]
 
 def load_rnn_pk(fnames):
     imgs = None
@@ -66,7 +69,7 @@ def create_cnn_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
 
 def get(bs=1, fs=files, rate=0.1, small=False):
     if small:
-        fs = fs[:1]
+        fs = f10
     imgs, labels = load_rnn_pk(fs)
 
     data = prepare_set(imgs, labels, rate=rate)
@@ -75,8 +78,9 @@ def get(bs=1, fs=files, rate=0.1, small=False):
         data[i] = np.transpose(a, axes=(1,0,2,3,4))
 
     train, val = create_cnn_iter(*data,batch_size=bs)
-    mark = np.ones((30)).astype(np.int)
+    T = imgs.shape[0]
+    mark = np.ones((T)).astype(np.int)
     return {'train':train, 'val':val, 'marks':mark}
 
 if __name__ == '__main__':
-    get()
+    get(small=True)

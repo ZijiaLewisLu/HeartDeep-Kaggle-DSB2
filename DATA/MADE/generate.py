@@ -17,7 +17,7 @@ for s in space:
 
     m = Maker(require)
     a = np.random.randint(360)
-    m.generate(30,a, center=center)
+    m.generate(10,a, center=center)
         
     img = [ i[None,None,None,:,:] for i in m.imgs ]
     label = [ l[None,None,None,:,:] for l in m.labels]
