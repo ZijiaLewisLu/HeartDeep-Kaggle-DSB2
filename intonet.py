@@ -3,6 +3,7 @@ import mxnet as mx
 import HeartDeepLearning.my_utils as mu
 from collections import OrderedDict
 import math
+import matplotlib.pyplot as plt
 
 
 def show_layer(layers, *args):
@@ -48,7 +49,7 @@ def show_filter(layer, *args):
     for h in range(H):
         for idx, output in enumerate(args):
             print '_' * 30, h
-                subs[idx].imshow(rout[layer][0, h], cmap='gray')
+            subs[idx].imshow(rout[layer][0, h], cmap='gray')
         plt.show()
         fig.clear()
     plt.close()
@@ -58,7 +59,10 @@ def fetch_internal(net, val, perfix, epoch, is_rnn=False):
 
     def verify(name):
 
-        for _ in ['weight', 'bias', 'gamma', 'beta', 'blockgrad', 'data', 'label']:
+        exclude = ['weight', 'bias', 'gamma',
+                   'beta', 'blockgrad', 'data', 'label']
+
+        for _ in exclude:
             if _ in name:
                 print 'Abandoned:', name
                 return False
@@ -91,16 +95,26 @@ def fetch_internal(net, val, perfix, epoch, is_rnn=False):
     model._init_params(shape)
     model.arg_params.update(arg)
     model.aux_params.update(aux)
-    print 'Start Predict'
+    print '\nStart Predict'
     outputs, img, label = mu.predict_draw(model, val)
     outputs = dict(zip(names, outputs))
+    
+    arg = { k:v.asnumpy() for k,v in arg.items() }
+    aux = { k:v.asnumpy() for k,v in aux.items() }
+
+    for _ in ['outputs', 'arg', 'aux']:
+        print '\nKey of %s' % _
+        o = locals()[_]
+        for k in o:
+            print k, o[k].shape, o[k].mean(), o[k].std()
+
     print 'Done'
-    return outputs, img, label
+    return outputs, img, label, arg, aux
 
 if __name__ == '__main__':
-    perfix = '/home/zijia/HeartDeepLearning/CNN/Result/[ACC-0.93164 E29]' 
-    epoch  = 29
+    perfix = '/home/zijia/HeartDeepLearning/CNN/Result/[ACC-0.93164 E29]'
+    epoch = 29
     from CNN.cnn import cnn_net
     net = cnn_net()
     iters = mu.get(3, small=True)
-    fetch_internal(net, iters['val'], perfix, epoch )
+    fetch_internal(net, iters['val'], perfix, epoch)

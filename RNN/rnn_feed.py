@@ -80,9 +80,9 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
             executor_manager.backward()
 
             logger.debug('Updateing weight...')
-            logger.debug('--------before update | grad check-------------')
-            for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
-                logger.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
+            #logger.debug('--------before update | grad check-------------')
+            #for pari in zip(executor_manager.param_names, executor_manager.grad_arrays):
+            #    logger.debug('%s-%f', pari[0], pari[1][0].asnumpy().mean())
 
             if update_on_kvstore:
                 _update_params_on_kvstore(executor_manager.param_arrays,
@@ -110,6 +110,8 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
 
             for name, value in name_value:
                 acc_hist.append(value)
+                if is_train:
+                    logger.info('[%dth Step] %s:%f', t, name, value)
 
     # end of all T
 

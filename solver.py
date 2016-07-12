@@ -140,7 +140,7 @@ class Solver():
         union = pred + label
 
         out = np.sum(conjunct * 2) / np.sum(union)
-        self.lgr.debug('-------------------------EVAL, mean of prediciton %f, truth %f, iou %f----------------------' %
+        self.lgr.debug('---------EVAL, mean of prediciton %f, truth %f, iou %f--------' %
                        (pred.mean(), label.mean(), out))
 
         if self.sks.pop('draw_each', False):
@@ -349,6 +349,9 @@ class Solver():
             kwords['e_marks'] = self.kwargs.pop('e_marks',None)
             marks = self.kwargs.pop('marks')
             from RNN import rnn_metric
+
+            from RNN.small_rnn import warp
+            #acc = warp(mx.metric.Accuracy().update)
             kwords['eval_metric'] = rnn_metric.RnnM(self.eval)
 
         # prepare and train
@@ -387,13 +390,15 @@ class Solver():
         out=list(out)
         if self.is_rnn:
             self.lgr.debug('Prediction Done, reshape rnn outputs')
+
+            shape = (-1,1)+out[1].shape[-2:]
             
-            out[0] = out[0][0].reshape((-1,1,256,256))
-            out[1] = out[1].reshape((-1,1,256,256))
-            out[2] = out[2].reshape((-1,1,256,256))
+            out[0] = out[0][0].reshape(shape)
+            out[1] = out[1].reshape(shape)
+            out[2] = out[2].reshape(shape)
         
-        N = out[0][0].shape[0]
-        H = out[0][0].shape[2]
+        N = out[0].shape[0]
+        H = out[0].shape[2]
 
         for idx in range(N):
             gap = np.ones((H, 5))

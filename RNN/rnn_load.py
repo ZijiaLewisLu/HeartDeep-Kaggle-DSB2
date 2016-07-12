@@ -58,12 +58,12 @@ def load_rnn_pk(fnames):
 from HeartDeepLearning.my_utils import prepare_set
 from rnn_iter import RnnIter
 
-def create_rnn_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad'):
-    train = RnnIter(img, label=ll, batch_size=batch_size, last_batch_handle=last_batch_handle)
+def create_rnn_iter(img, ll, vimg, vll, batch_size=10, last_batch_handle='pad', num_hidden=250):
+    train = RnnIter(img, label=ll, batch_size=batch_size, last_batch_handle=last_batch_handle, num_hidden=num_hidden)
 
     # N = vimg.shape[1]
     # batch_size = min(N, batch_size)
-    val   = RnnIter(vimg,label=vll, batch_size=batch_size, last_batch_handle=last_batch_handle)
+    val   = RnnIter(vimg,label=vll, batch_size=batch_size, last_batch_handle=last_batch_handle, num_hidden=num_hidden)
 
     return train, val
 

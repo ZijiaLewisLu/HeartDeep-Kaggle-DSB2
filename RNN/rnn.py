@@ -8,11 +8,10 @@ from rnn_iter import RnnIter
 import matplotlib.pyplot as plt
 from rnn_metric import RnnM
 
-def rnn_net(dropout=0., logistic=True, begin=None):
+def rnn_net(dropout=0., logistic=True, begin=None, num_hidden=250):
 
     if begin is None:
         begin = n.reshape1  # N, 1*256*256
-    num_hidden = 250
 
     if dropout > 0.:
         begin = mx.sym.Dropout(data=begin, p=dropout)
@@ -32,30 +31,31 @@ def rnn_net(dropout=0., logistic=True, begin=None):
                                 num_hidden=num_hidden * 4,
                                 name="rnn_h2h")
     gates = i2h + h2h
+    #gates._set_attr(name='gates')
     slice_gates = mx.sym.SliceChannel(gates, num_outputs=4,
                                       name="rnn_slice")
 
-    in_gate = mx.sym.Activation(slice_gates[0], act_type="sigmoid")
-    in_transform = mx.sym.Activation(slice_gates[1], act_type="tanh")
-    forget_gate = mx.sym.Activation(slice_gates[2], act_type="sigmoid")
-    out_gate = mx.sym.Activation(slice_gates[3], act_type="sigmoid")
+    in_gate = mx.sym.Activation(slice_gates[0], act_type="sigmoid", name='in_gate')
+    in_transform = mx.sym.Activation(slice_gates[1], act_type="tanh", name='in_transform')
+    forget_gate = mx.sym.Activation(slice_gates[2], act_type="sigmoid", name='forget_gate')
+    out_gate = mx.sym.Activation(slice_gates[3], act_type="sigmoid", name='out_gate')
 
-    c = (forget_gate * c) + (in_gate * in_transform)
-    h = out_gate * mx.sym.Activation(c, act_type="tanh")
-
+    c_this = (forget_gate * c) + (in_gate * in_transform)
+    #c._set_attr(name='thisC')
+    h_this = out_gate * mx.sym.Activation(c_this, act_type="tanh", name='tanh2h')
 
     if dropout > 0.:
-        h = mx.sym.Dropout(data=h, p=dropout)
+        h_this = mx.sym.Dropout(data=h_this, p=dropout)
 
     fc = mx.sym.FullyConnected(
-        data=h,
+        data=h_this,
         num_hidden=1 * 256 * 256,
         name='pred'
     )
 
-    reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, 1, 256, 256))
-    c = mx.sym.BlockGrad(data=c)
-    h = mx.sym.BlockGrad(data=h)
+    reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, 1, 256, 256), name='reshape2')
+    c_this = mx.sym.BlockGrad(data=c_this)
+    h_this = mx.sym.BlockGrad(data=h_this)
 
     if not logistic:
         sgmd = mx.sym.Activation(data=reshape2, act_type='sigmoid')
@@ -64,7 +64,7 @@ def rnn_net(dropout=0., logistic=True, begin=None):
     else:
         net = mx.sym.LogisticRegressionOutput(data=reshape2, name='softmax')
 
-    group = mx.sym.Group([net, c, h])
+    group = mx.sym.Group([net, c_this, h_this])
     return group
 
 

@@ -2,6 +2,56 @@ import ipt
 import mxnet as mx
 import numpy as np
 import mxnet.ndarray as nd
+
+def conv_relu(base_name, bn=False, **kwargs):
+    n=base_name
+    c = mx.sym.Convolution(name='c'+n, **kwargs)
+    if bn:
+        c = mx.sym.BatchNorm(name='b'+n, data=c)
+    r = mx.sym.Activation(name='r'+n, data=c, act_type='relu')
+    
+    return r
+
+def maxpool(data):
+    return mx.sym.Pooling(data=data, pool_type="max", kernel=(2,2), stride=(2,2))
+
+
+
+
+##################################################LSTM
+def LSTM(sym, num_hidden, C, H, W):
+    c = mx.sym.Variable(name='c')
+    h = mx.sym.Variable(name='h')
+    i2h = mx.sym.FullyConnected(data=sym,
+                                # weight=param.i2h_weight,
+                                # bias=param.i2h_bias,
+                                num_hidden=num_hidden * 4,
+                                name="rnn_i2h")
+    h2h = mx.sym.FullyConnected(data=h,
+                                # weight=param.h2h_weight,
+                                # bias=param.h2h_bias,
+                                num_hidden=num_hidden * 4,
+                                name="rnn_h2h")
+    gates = i2h + h2h
+    slice_gates = mx.sym.SliceChannel(gates, num_outputs=4,
+                                      name="rnn_slice")
+    in_gate = mx.sym.Activation(slice_gates[0], act_type="sigmoid", name='in_gate')
+    in_transform = mx.sym.Activation(slice_gates[1], act_type="tanh", name='in_transform')
+    forget_gate = mx.sym.Activation(slice_gates[2], act_type="sigmoid", name='forget_gate')
+    out_gate = mx.sym.Activation(slice_gates[3], act_type="sigmoid", name='out_gate')
+    c_this = (forget_gate * c) + (in_gate * in_transform)
+    h_this = out_gate * mx.sym.Activation(c_this, act_type="tanh", name='tanh2h')
+    fc = mx.sym.FullyConnected(
+        data=h_this,
+        num_hidden=C*H*W,
+        name='pred'
+    )
+    reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, C, H, W), name='reshape2')
+    c_this = mx.sym.BlockGrad(data=c_this)
+    h_this = mx.sym.BlockGrad(data=h_this)
+
+    return reshape2, c_this, h_this
+
 ####################################################
 
 class IOU(mx.operator.CustomOp):

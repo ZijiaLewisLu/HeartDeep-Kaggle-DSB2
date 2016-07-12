@@ -4,7 +4,7 @@ from mxnet.ndarray import array
 
 
 class RnnIter(DataIter):
-    def __init__(self, data, label=None, batch_size=1, last_batch_handle='pad'):
+    def __init__(self, data, label=None, batch_size=1, last_batch_handle='pad', num_hidden=250):
         """data and label should be T*N*C*H*W"""
         super(RnnIter, self).__init__()
 
@@ -13,6 +13,7 @@ class RnnIter(DataIter):
 
         self.data_list = [x[1] for x in self.data] + [x[1] for x in self.label]
         self.num_source = len(self.data_list)
+        self.num_hidden = num_hidden
 
         # batching
         if last_batch_handle == 'discard':
@@ -37,8 +38,8 @@ class RnnIter(DataIter):
     def provide_data(self):
         """The name and shape of data provided by this iterator"""
         lst = [(k, tuple([self.batch_size] + list(v.shape[2:]))) for k, v in self.data]
-        lst.append(('c',(self.batch_size, 250)))
-        lst.append(('h',(self.batch_size, 250)))
+        lst.append(('c',(self.batch_size, self.num_hidden)))
+        lst.append(('h',(self.batch_size, self.num_hidden)))
         return lst
 
     @property
