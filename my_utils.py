@@ -218,8 +218,8 @@ def augment_sunny(img, label):
             zx, zy, sx, sy = np.random.randint(80, high=120, size=4) / 100.00
             aug['zoom_x'] = zx
             aug['zoom_y'] = zy
-            aug['skew_x'] = sx * 15
-            aug['skew_y'] = sy * 15
+            #aug['skew_x'] = sx * 15
+            #aug['skew_y'] = sy * 15
             aug['rotate'] = np.random.randint(360)
             aug['translate_x'], aug[
                 'translate_y'] = np.random.randint(-50, 50, size=2)

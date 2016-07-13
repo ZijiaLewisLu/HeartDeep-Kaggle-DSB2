@@ -9,17 +9,27 @@ def conv_relu(base_name, bn=False, **kwargs):
     if bn:
         c = mx.sym.BatchNorm(name='b'+n, data=c)
     r = mx.sym.Activation(name='r'+n, data=c, act_type='relu')
-    
     return r
 
-def maxpool(data):
-    return mx.sym.Pooling(data=data, pool_type="max", kernel=(2,2), stride=(2,2))
+def deconv_relu(base_name, bn=False, **kwargs):
+    n=base_name
+    c = mx.sym.Deconvolution(name='c'+n, **kwargs)
+    if bn:
+        c = mx.sym.BatchNorm(name='b'+n, data=c)
+    r = mx.sym.Activation(name='r'+n, data=c, act_type='relu')
+    return r
 
-
-
+def maxpool(data, k_size=2):
+    size = (k_size, k_size)
+    return mx.sym.Pooling(data=data, pool_type="max", kernel=size, stride=size)
 
 ##################################################LSTM
 def LSTM(sym, num_hidden, C, H, W):
+    """
+    sym: the input sym
+    num_hidden: hidden dim of c, h
+    C, H, W: shape of outputs
+    """
     c = mx.sym.Variable(name='c')
     h = mx.sym.Variable(name='h')
     i2h = mx.sym.FullyConnected(data=sym,

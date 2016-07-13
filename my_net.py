@@ -3,7 +3,7 @@ import mxnet as mx
 from my_layer import *
 
 
-''' pm refers to Params'''
+'''pm refers to Params'''
 
 pm= {
             'c1':{

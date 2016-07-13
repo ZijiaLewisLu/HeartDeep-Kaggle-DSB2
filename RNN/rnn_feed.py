@@ -34,6 +34,7 @@ RNN_HIDDEN = 250
 
 def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
              logger=None,
+             callback=None,
              monitor=None,
              update_on_kvstore=None,
              is_train=False):
@@ -111,7 +112,15 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
             for name, value in name_value:
                 acc_hist.append(value)
                 if is_train:
-                    logger.info('[%dth Step] %s:%f', t, name, value)
+                    logger.info('[%02dth Step] %s:%f', t, name, value)
+
+        # Time Step Callback
+        if callback:
+            callback = [callback] if not isinstance(callback, list) else callback
+            for cb in callback:
+                assert callable(cb), cb
+                params = (t, m, eval_metric, locals())
+                cb(params)
 
     # end of all T
 
@@ -128,7 +137,7 @@ def _train_rnn(
         kvstore, update_on_kvstore, train_data,
         e_marks=None,
         eval_data=None, eval_metric=None,
-        epoch_end_callback=None, batch_end_callback=None,
+        epoch_end_callback=None, batch_end_callback=None, time_step_callback=None,
         logger=None, work_load_list=None, monitor=None,
         eval_batch_end_callback=None, sym_gen=None,
         mutable_data_shape=False, max_data_shape=None):
@@ -199,6 +208,7 @@ def _train_rnn(
                     logger=logger,
                     update_on_kvstore=update_on_kvstore,
                     is_train=True,
+                    callback= time_step_callback
                 )
 
                 nbatch += 1
@@ -291,7 +301,8 @@ class Feed(FeedForward):
             marks,
             e_marks=None,
             y=None, eval_data=None, eval_metric='acc',
-            epoch_end_callback=None, batch_end_callback=None, kvstore='local', logger=None,
+            epoch_end_callback=None, batch_end_callback=None, time_step_callback=None,
+            kvstore='local', logger=None,
             work_load_list=None, monitor=None, eval_batch_end_callback=None):
         """Overwrite"""
 
@@ -304,11 +315,7 @@ class Feed(FeedForward):
             self._check_arguments()
         self.kwargs["sym"] = self.symbol
 
-        # fixed
-        N = data.batch_size
         param_dict = dict(data.provide_data + data.provide_label)
-        # param_dict['c'] = param_dict['h'] = (N, self.rnn_hidden)
-
         arg_names, param_names, aux_names = self._init_params(param_dict)
 
         # setup metric
@@ -340,7 +347,6 @@ class Feed(FeedForward):
             optimizer = self.optimizer
 
         # do training
-        # print 'before _train_rnn self.arg_params',self.arg_params.keys()
         _train_rnn(self.symbol, self.ctx,
                    marks,
                    arg_names, param_names, aux_names,
@@ -352,6 +358,7 @@ class Feed(FeedForward):
                    eval_metric=eval_metric,
                    epoch_end_callback=epoch_end_callback,
                    batch_end_callback=batch_end_callback,
+                   time_step_callback=time_step_callback,
                    kvstore=kvstore, update_on_kvstore=update_on_kvstore,
                    logger=logger, work_load_list=work_load_list, monitor=monitor,
                    eval_batch_end_callback=eval_batch_end_callback,
@@ -372,7 +379,7 @@ class Feed(FeedForward):
                y=None, ctx=None,
                num_epoch=None, epoch_size=None, optimizer='sgd', initializer=Uniform(0.01),
                eval_data=None, eval_metric='acc',
-               epoch_end_callback=None, batch_end_callback=None,
+               epoch_end_callback=None, batch_end_callback=None, time_step_callback=None,
                kvstore='local', logger=None, work_load_list=None,
                eval_batch_end_callback=None, **kwargs):
         """Overwrite"""

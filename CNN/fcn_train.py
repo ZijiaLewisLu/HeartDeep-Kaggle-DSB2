@@ -38,14 +38,14 @@ def train(param=PARAMS, sv=SOLVE, small=False):
 if __name__ == '__main__':
     # temperal setting
     SOLVE['load'] = True
-    SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/CNN/Result/<11-21:23:29>fcn_train.py[E30]/[ACC-0.94367 E28]'
-    SOLVE['load_epoch'] = 28
+    SOLVE['load_perfix'] = '/home/zijia/HeartDeepLearning/CNN/Result/<12-12:00:44>fcn_train.py[E15]/[ACC-0.93389 E14]'
+    SOLVE['load_epoch'] = 14
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     
-    PARAMS['num_epoch'] = 10
+    PARAMS['num_epoch'] = 15
     # PARAMS['optimizer'] = 'adam'
-    PARAMS['learning_rate'] = 1e-2
-    #PARAMS['wd'] = 5e-6
+    PARAMS['learning_rate'] = 0.1
+    PARAMS['wd'] = 1e-6
 
     train()

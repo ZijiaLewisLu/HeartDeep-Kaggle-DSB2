@@ -37,9 +37,6 @@ def train(param = PARAMS, sv=SOLVE, small=False):
     s = Solver(net, train, sv, **param)
     s.train()
     s.predict()
-    s.all_to_png()
-    s.save_best_model()
-    s.plot_process()
 
 if __name__ == '__main__':
     # temperal setting
