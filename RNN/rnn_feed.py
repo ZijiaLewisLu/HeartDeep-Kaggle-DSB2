@@ -142,7 +142,6 @@ def _train_rnn(
         eval_batch_end_callback=None, sym_gen=None,
         mutable_data_shape=False, max_data_shape=None):
     """Mark should be a list of #SeriesLength, annotating if image has label by 1 , 0"""
-    # TODO check mark shape
     # TODO marks not working if label of SAX is different in one batch
 
     if logger is None:

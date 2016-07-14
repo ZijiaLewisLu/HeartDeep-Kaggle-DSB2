@@ -24,14 +24,16 @@ def maxpool(data, k_size=2):
     return mx.sym.Pooling(data=data, pool_type="max", kernel=size, stride=size)
 
 ##################################################LSTM
-def LSTM(sym, num_hidden, C, H, W):
+def LSTM(sym, num_hidden, C, H, W, c=None, h=None):
     """
     sym: the input sym
     num_hidden: hidden dim of c, h
     C, H, W: shape of outputs
     """
-    c = mx.sym.Variable(name='c')
-    h = mx.sym.Variable(name='h')
+    if not c:
+        c = mx.sym.Variable(name='c')
+    if not h:
+        h = mx.sym.Variable(name='h')
     i2h = mx.sym.FullyConnected(data=sym,
                                 # weight=param.i2h_weight,
                                 # bias=param.i2h_bias,

@@ -7,6 +7,7 @@ from rnn_feed import Feed
 from rnn_iter import RnnIter
 import matplotlib.pyplot as plt
 from rnn_metric import RnnM
+import mxnet.symbol as S
 
 def rnn_net(dropout=0., logistic=True, begin=None, num_hidden=250):
 
@@ -83,6 +84,22 @@ def contruct_iter():
     img -= img.mean().astype('int64')
 
     return RnnIter(img, ll), m
+
+
+def unroll_lstm(seq_len, num_hidden, C, H, W):
+    from my_layer import LSTM
+    T = seq_len
+    cs = [S.Variable('c_init')]
+    hs = [S.Variable('h_init')]
+    preds  = []
+    datas  = [S.Variable('data%d'%i) for i in range(T)]
+    for t in range(T):
+        pred, c, h = LSTM(datas[t], num_hidden, C, H, W, c=cs[-1], h=hs[-1])
+        pred = S.LogisticRegressionOutput(data=pred, name='logis%d'%t)
+        preds.append(pred)
+        cs.append(c)
+        hs.append(h)
+    return S.Group(preds)
 
 
 if __name__ == '__main__':

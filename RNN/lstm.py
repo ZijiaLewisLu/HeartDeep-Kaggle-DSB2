@@ -105,9 +105,9 @@ def lstm_unroll(num_lstm_layer, seq_len, input_size,
     #label = mx.sym.Concat(*label, dim=0)
     #label = mx.sym.Reshape(data=label, target_shape=(0,))
     ################################################################################
-    output = mx.sym.Custom(data = net, name = 'softmax', op_type = 'sfmx')
+    sm = mx.sym.SoftmaxOutput(data=pred, label=label, name='softmax')
 
-    return output
+    return sm
 
 def lstm_inference_symbol(num_lstm_layer, input_size,
                           num_hidden, num_embed, num_label, dropout=0.):

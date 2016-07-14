@@ -124,8 +124,6 @@ def save_img(img, name):
 
 def eval_iou(label, pred):
 
-    print 'in'
-
     conjunct = pred * label
     union = pred + label
     out = np.sum(conjunct * 2) / np.sum(union)

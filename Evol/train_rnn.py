@@ -38,13 +38,13 @@ def train(param=PARAMS, sv=SOLVE, small=False):
 if __name__ == '__main__':
     # temperal setting
     SOLVE['load'] = True
-    SOLVE['load_perfix'] = "Result/<13-14:13:16>train_rnn[E5]/[ACC-0.70691 E4]"
-    SOLVE['load_epoch']  = 4
+    SOLVE['load_perfix'] = "Result/<13-21:17:57>train_rnn[E10]/[ACC-0.82433 E9]"
+    SOLVE['load_epoch']  = 9
     #SOLVE['use_logis'] = True
     #SOLVE['block_bn'] = True
     SOLVE['is_rnn'] = True
     
-    PARAMS['num_epoch'] = 5
+    PARAMS['num_epoch'] = 20
     # PARAMS['optimizer'] = 'adam'
     PARAMS['learning_rate'] = 0.5
     #PARAMS['wd'] = 5e-5
