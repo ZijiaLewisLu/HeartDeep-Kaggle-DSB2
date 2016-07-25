@@ -195,11 +195,11 @@ class Solver():
         """epoch, nbatch, eval_metric, locals """
         self.nbatch = params[1]
 
+        manager = params[3]['executor_manager']
         if self.param_name is None:
             self.param_name = manager.param_names
 
 
-        manager = params[3]['executor_manager']
 
         for i, n in enumerate(self.param_name):
             ps = params[3]['executor_manager'].param_arrays[i]

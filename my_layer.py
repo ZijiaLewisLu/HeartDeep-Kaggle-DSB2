@@ -23,25 +23,38 @@ def maxpool(data, k_size=2):
     size = (k_size, k_size)
     return mx.sym.Pooling(data=data, pool_type="max", kernel=size, stride=size)
 
+
 ##################################################LSTM
-def LSTM(sym, num_hidden, C, H, W, c=None, h=None):
+def LSTM(sym, num_hidden, C, H, W, c=None, h=None, idx='', param=None):
     """
     sym: the input sym
     num_hidden: hidden dim of c, h
     C, H, W: shape of outputs
     """
+    from settings import LSTMParam
+    if not isinstance(idx, str):
+        idx=str(idx)
     if not c:
-        c = mx.sym.Variable(name='c')
+        c = mx.sym.Variable(name='c%s'%idx)
     if not h:
-        h = mx.sym.Variable(name='h')
+        h = mx.sym.Variable(name='h%s'%idx)
+    if not param:
+        param = LSTMParam(  i2h_weight=mx.sym.Variable("i2h_weight"),
+                            i2h_bias=mx.sym.Variable("i2h_bias"),
+                            h2h_weight=mx.sym.Variable("h2h_weight"),
+                            h2h_bias=mx.sym.Variable("h2h_bias"),
+                            Y_weight  =S.Variable("Y_weight"),
+                            Y_bias    =S.Variable("Y_bias")
+                            )
+
     i2h = mx.sym.FullyConnected(data=sym,
-                                # weight=param.i2h_weight,
-                                # bias=param.i2h_bias,
                                 num_hidden=num_hidden * 4,
+                                weight=param.i2h_weight,
+                                bias=param.i2h_bias,
                                 name="rnn_i2h")
     h2h = mx.sym.FullyConnected(data=h,
-                                # weight=param.h2h_weight,
-                                # bias=param.h2h_bias,
+                                weight=param.h2h_weight,
+                                bias=param.h2h_bias,
                                 num_hidden=num_hidden * 4,
                                 name="rnn_h2h")
     gates = i2h + h2h
@@ -56,9 +69,11 @@ def LSTM(sym, num_hidden, C, H, W, c=None, h=None):
     fc = mx.sym.FullyConnected(
         data=h_this,
         num_hidden=C*H*W,
-        name='pred'
+        weight=param.Y_weight,
+        bias=param.Y_bias,
+        name='Y'
     )
-    reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, C, H, W), name='reshape2')
+    reshape2 = mx.sym.Reshape(data=fc, target_shape=(0, C, H, W), name='reshape')
     c_this = mx.sym.BlockGrad(data=c_this)
     h_this = mx.sym.BlockGrad(data=h_this)
 

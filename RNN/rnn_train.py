@@ -1,6 +1,6 @@
 import ipt
 import mxnet as mx
-from rnn import rnn
+from rnn import rnn_net as rnn
 from HeartDeepLearning.solver import Solver
 import my_utils as mu
 from rnn_load import get

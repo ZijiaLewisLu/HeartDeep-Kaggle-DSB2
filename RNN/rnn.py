@@ -68,40 +68,6 @@ def rnn_net(dropout=0., logistic=True, begin=None, num_hidden=250):
     group = mx.sym.Group([net, c_this, h_this])
     return group
 
-
-def contruct_iter():
-    import pickle as pk
-    fname = '/home/zijia/HeartDeepLearning/Net/patience/SC-HF-I-1.pk'
-    with open(fname, 'r') as f:
-        img = pk.load(f)
-        ll = pk.load(f)
-        m = pk.load(f)
-
-    img = img[:60, None, None, :, :]
-    ll = ll[:60, None, None, :, :]
-    m = m[:60]
-
-    img -= img.mean().astype('int64')
-
-    return RnnIter(img, ll), m
-
-
-def unroll_lstm(seq_len, num_hidden, C, H, W):
-    from my_layer import LSTM
-    T = seq_len
-    cs = [S.Variable('c_init')]
-    hs = [S.Variable('h_init')]
-    preds  = []
-    datas  = [S.Variable('data%d'%i) for i in range(T)]
-    for t in range(T):
-        pred, c, h = LSTM(datas[t], num_hidden, C, H, W, c=cs[-1], h=hs[-1])
-        pred = S.LogisticRegressionOutput(data=pred, name='logis%d'%t)
-        preds.append(pred)
-        cs.append(c)
-        hs.append(h)
-    return S.Group(preds)
-
-
 if __name__ == '__main__':
     #logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
