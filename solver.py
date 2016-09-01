@@ -266,7 +266,7 @@ class Solver():
         self.nepoch = epoch
         # print 'Epoch[%d] Train accuracy: %f' % (epoch, np.sum(acc) /
         this_acc = np.sum(acc) / float(len(acc))
-        self.lgr.info('E[%d] T acc: %f', epoch, this_acc)
+        self.lgr.info('Epoch[%d] T acc: %f', epoch, this_acc)
 
         if self.save_best and \
                 (self.best_param is None or this_acc > self.best_acc):

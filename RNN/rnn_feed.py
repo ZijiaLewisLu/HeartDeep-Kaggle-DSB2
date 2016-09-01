@@ -112,7 +112,7 @@ def _run_sax(data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx,
             for name, value in name_value:
                 acc_hist.append(value)
                 if is_train:
-                    logger.info('[%02dth Step] %s:%f', t, name, value)
+                    logger.debug('[%02dth Step] %s:%f', t, name, value)
 
         # Time Step Callback
         if callback:
@@ -162,8 +162,8 @@ def _train_rnn(
 
     executor_manager.set_params(arg_params, aux_params)
 
-    if not update_on_kvstore:
-        updater = get_updater(optimizer)
+    #if not update_on_kvstore:
+    updater = get_updater(optimizer)
 
     if kvstore:
         _initialize_kvstore(kvstore=kvstore,
@@ -201,8 +201,13 @@ def _train_rnn(
                     monitor.tic()
 
                 # Start to iter on Time steps
+                if isinstance(marks[nbatch], list):
+                    M = marks[nbatch]
+                else:
+                    M = marks
+
                 executor_manager, eval_metric, acc_hist = _run_sax(
-                    data_batch_zoo, marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
+                    data_batch_zoo, M, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
                     monitor=monitor,
                     logger=logger,
                     update_on_kvstore=update_on_kvstore,
@@ -260,10 +265,15 @@ def _train_rnn(
             assert e_marks is not None, 'e marks cannot be None'
             eval_metric.reset()
             eval_data.reset()
-            for eval_zoo in eval_data:
+            for b, eval_zoo in enumerate(eval_data):
+
+                if isinstance(e_marks[b], list):
+                    M = e_marks[b]
+                else:
+                    M = e_marks
 
                 executor_manager, eval_metric, acc_hist = _run_sax(
-                    eval_zoo, e_marks, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
+                    eval_zoo, M, executor_manager, eval_metric, updater, ctx, kvstore, acc_hist,
                     update_on_kvstore=update_on_kvstore,
                     is_train=False)
 
@@ -284,7 +294,6 @@ def _train_rnn(
             name_value = eval_metric.get_name_value()
             for name, value in name_value:
                 logger.info('Epoch[%d] Validation-%s=%f', epoch, name, value)
-                print 'Epoch[%d] Validation=%f' % (epoch, value)
     # end of all epochs
     return
 

@@ -14,8 +14,18 @@ if host == 'NYUSH':
 else:
     
     files = [
-               '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:28:45>.pk',
-               '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:29:01>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:28:45>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<6-11:29:01>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:44:34>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:44:43>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:45:03>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:45:25>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:55:08>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:55:20>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:55:48>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:55:59>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:56:37>.pk',
+                '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T30,N10]<26-10:56:53>.pk',
             ]
     f10 = [
             '/home/zijia/HeartDeepLearning/DATA/PK/NEW/[T10,N10]<8-11:42:11>.pk',
@@ -78,7 +88,7 @@ def get(bs=1, fs=files, rate=0.1, small=False):
         data[i] = np.transpose(a, axes=(1,0,2,3,4))
 
     train, val = create_rnn_iter(*data,batch_size=bs)
-    T = imgs.shape[0]
+    T = imgs.shape[1]
     mark = np.ones((T)).astype(np.int)
     return {'train':train, 'val':val, 'marks':mark}
 

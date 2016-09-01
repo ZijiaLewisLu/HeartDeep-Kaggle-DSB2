@@ -6,6 +6,78 @@ import numpy as np
 from collections import namedtuple
 import time
 import math
+
+from my_layer import conv_relu,  maxpool
+from my_net import pm as Param
+import mxnet.symbol as S
+
+def gen():
+    for i in range(1000):
+        yield i
+
+gtr = gen()
+
+def cnn_forward(data, P, D):
+
+    def C(idx, indata, bn):
+        p= Param['c%d'%idx]
+        i= 4*(idx-1)
+    
+        c= S.Convolution(name='c'+str(idx),
+                data=indata,
+                kernel=p['fsize'],
+                num_filter=p['fnum'],
+                pad=p['pad'],
+                stride=p['stride'],
+                weight=P[i], 
+                bias=P[i+1]
+                )
+        if bn:
+            c = mx.sym.BatchNorm(
+                    name='b'+str(next(gtr)), data=c, 
+                    gamma=P[i+2], beta=P[i+3],
+                    )
+        r = mx.sym.Activation(name='r'+str(idx), data=c, act_type='relu')
+        return r
+    
+    conv1 = C(1, data, True)
+    conv2 = C(2, conv1, True)
+    pool1 = maxpool(conv2)
+
+    conv3 = C(3, pool1, True)
+    pool2 = maxpool(conv3)
+
+    conv4 = C(4, pool2, True)
+    pool3 = maxpool(conv4)
+
+    conv5 = C(5, pool3, True)
+    conv6 = C(6, conv5, True)
+    up1   = S.Deconvolution(
+        data=conv6, kernel=(4,4), stride=(2,2), pad=(1,1),
+        num_filter=64, no_bias=True,
+        weight=D[0]
+        )
+
+    conv7 = C(7, up1, True)
+    up2   = S.Deconvolution(
+        data=conv7, kernel=(4,4), stride=(2,2), pad=(1,1),
+        num_filter=64, no_bias=True,
+        weight=D[1] 
+        )
+
+    conv8 = C(8, up2, True)
+    up3   = S.Deconvolution(
+        data=conv8, kernel=(4,4), stride=(2,2), pad=(1,1),
+        num_filter=32, no_bias=True,
+        weight=D[2] 
+        )
+
+    conv9 = C(9, up3, True)
+    conv10 = C(10, conv9, True)
+
+    return conv10
+
+
 LSTMState = namedtuple("LSTMState", ["c", "h"])
 LSTMParam = namedtuple("LSTMParam", ["i2h_weight", "i2h_bias",
                                      "h2h_weight", "h2h_bias"])
@@ -18,15 +90,17 @@ def lstm(num_hidden, indata, prev_state, param, seqidx, layeridx, dropout=0.):
     """LSTM Cell symbol"""
     if dropout > 0.:
         indata = mx.sym.Dropout(data=indata, p=dropout)
-    i2h = mx.sym.FullyConnected(data=indata,
+    i2h = mx.sym.Convolution(data=indata, 
                                 weight=param.i2h_weight,
                                 bias=param.i2h_bias,
-                                num_hidden=num_hidden * 4,
+                                num_filter=num_hidden * 4,
+                                kernel=(5,5), pad=(2,2),
                                 name="t%d_l%d_i2h" % (seqidx, layeridx))
-    h2h = mx.sym.FullyConnected(data=prev_state.h,
+    h2h = mx.sym.Convolution(data=prev_state.h,
                                 weight=param.h2h_weight,
                                 bias=param.h2h_bias,
-                                num_hidden=num_hidden * 4,
+                                num_filter=num_hidden * 4,
+                                kernel=(5,5), pad=(2,2),
                                 name="t%d_l%d_h2h" % (seqidx, layeridx))
     gates = i2h + h2h
     slice_gates = mx.sym.SliceChannel(gates, num_outputs=4,
@@ -45,14 +119,15 @@ def lstm(num_hidden, indata, prev_state, param, seqidx, layeridx, dropout=0.):
 # making the mini-batch size of the label different from the data.
 # I think the existing data-parallelization code need some modification
 # to allow this situation to work properly
-def lstm_unroll(num_lstm_layer, seq_len, input_size,
-                num_hidden, num_embed, num_label, dropout=0.):
+def lstm_unroll(num_lstm_layer, seq_len,
+                num_hidden, num_label, dropout=0.):
 
-    embed_weight = mx.sym.Variable("embed_weight")
+    # embed_weight = mx.sym.Variable("embed_weight")
     cls_weight = mx.sym.Variable("cls_weight")
     cls_bias = mx.sym.Variable("cls_bias")
     param_cells = []
     last_states = []
+    pred_all   = []
     for i in range(num_lstm_layer):
         param_cells.append(LSTMParam(i2h_weight=mx.sym.Variable("l%d_i2h_weight" % i),
                                      i2h_bias=mx.sym.Variable("l%d_i2h_bias" % i),
@@ -66,13 +141,27 @@ def lstm_unroll(num_lstm_layer, seq_len, input_size,
     # embeding layer
     data = mx.sym.Variable('data')
     label = mx.sym.Variable('softmax_label')
-    embed = mx.sym.Embedding(data=data, input_dim=input_size,
-                             weight=embed_weight, output_dim=num_embed, name='embed')
-    wordvec = mx.sym.SliceChannel(data=embed, num_outputs=seq_len, squeeze_axis=1)
+    timeseq =  mx.sym.SliceChannel(data=data, num_outputs=seq_len, squeeze_axis=1)
+    labelseq = mx.sym.SliceChannel(data=label, num_outputs=seq_len, squeeze_axis=1)
+    
+    # CNN param
+    layer_num = 10
+    P = []
+    for i in range(layer_num):
+        P.append(S.Variable('c%d_weight'%i))
+        P.append(S.Variable('c%d_bias'%i))
+        P.append(S.Variable('bn%d_gamma'%i))
+        P.append(S.Variable('bn%d_beta'%i))
+    up_num = 3
+    D = []
+    for i in range(up_num):
+        D.append( S.Variable('deconv%d_weight'%i))
+        # D.append( S.Variable('deconv%d_bias'%i)  )
 
-    hidden_all = []
     for seqidx in range(seq_len):
-        hidden = wordvec[seqidx]
+        hidden = timeseq[seqidx]
+        # embed in CNN
+        hidden = cnn_forward(hidden, P, D)
 
         # stack LSTM
         for i in range(num_lstm_layer):
@@ -89,18 +178,24 @@ def lstm_unroll(num_lstm_layer, seq_len, input_size,
         # decoder
         if dropout > 0.:
             hidden = mx.sym.Dropout(data=hidden, p=dropout)
-        hidden_all.append(hidden)
+        #hidden_all.append(hidden)
+        
+        pred = mx.sym.Convolution(data=hidden, weight=cls_weight, bias=cls_bias, name='pred%d'%seqidx, 
+                                    kernel=(1,1), num_filter=num_label, pad=(0,0))
+        pred = mx.sym.LogisticRegressionOutput(data=pred, label=labelseq[seqidx], name='logis%d'%seqidx)
+        pred_all.append(pred)
+    
+    # hidden_concat = mx.sym.Concat(*hidden_all, dim=0)
+    # pred = mx.sym.FullyConnected(data=hidden_concat, num_hidden=num_label,
+    #                              weight=cls_weight, bias=cls_bias, name='pred')
 
-    hidden_concat = mx.sym.Concat(*hidden_all, dim=0)
-    pred = mx.sym.FullyConnected(data=hidden_concat, num_hidden=num_label,
-                                 weight=cls_weight, bias=cls_bias, name='pred')
-
+        
     ################################################################################
     # Make label the same shape as our produced data path
     # I did not observe big speed difference between the following two ways
 
-    label = mx.sym.transpose(data=label)
-    label = mx.sym.Reshape(data=label, target_shape=(0,))
+    # label = mx.sym.transpose(data=label)
+    # label = mx.sym.Reshape(data=label, target_shape=(0,))
 
     #label_slice = mx.sym.SliceChannel(data=label, num_outputs=seq_len)
     #label = [label_slice[t] for t in range(seq_len)]
@@ -108,14 +203,14 @@ def lstm_unroll(num_lstm_layer, seq_len, input_size,
     #label = mx.sym.Reshape(data=label, target_shape=(0,))
     ################################################################################
 
-    sm = mx.sym.SoftmaxOutput(data=pred, label=label, name='softmax')
+    # sm = mx.sym.LogisticRegressionOutput(data=pred, label=label, name='softmax')
 
-    return sm
+    return mx.sym.Group(pred_all)
 
 def lstm_inference_symbol(num_lstm_layer, input_size,
                           num_hidden, num_embed, num_label, dropout=0.):
     seqidx = 0
-    embed_weight=mx.sym.Variable("embed_weight")
+    # embed_weight=mx.sym.Variable("embed_weight")
     cls_weight = mx.sym.Variable("cls_weight")
     cls_bias = mx.sym.Variable("cls_bias")
     param_cells = []

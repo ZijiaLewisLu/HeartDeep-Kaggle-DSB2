@@ -200,3 +200,36 @@ class SfmxProp(mx.operator.CustomOpProp):
         return Sfmx()
 
 #############################################################
+
+class RegLoss(mx.operator.CustomOp):
+    
+    def forward(self, is_train, req, in_data, out_data, aux):
+        self.assign(out_data[0], req[0], in_data[0])
+
+    def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
+        prev = in_data[0]
+        this = in_data[1]
+        grad = 2*(prev-this)
+
+        self.assign(in_grad[0], req[0], grad )
+        self.assign(in_grad[1], req[0], -grad)
+
+@mx.operator.register('regloss')
+class RegLossProp(mx.operator.CustomOpProp):
+
+    def __init__(self):
+        super(RegLossProp, self).__init__(need_top_grad=False)
+
+    def list_arguments(self):
+        return ['prev_data', 'this_data']
+
+    def list_outputs(self):
+        return ['outputs']
+
+    def infer_shape(self, inshape):
+        ''' [data shape, label shape] ,[output shape], [aux ..?]'''
+        data_shape = inshape[0]
+        return [inshape[0], inshape[0]], [inshape[0]], []
+
+    def create_operator(self, ctx, shapes, dtypes):
+        return RegLoss()
