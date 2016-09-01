@@ -16,9 +16,9 @@ def Perplexity(label, pred):
     return np.exp(loss / label.size)
 
 if __name__ == '__main__':
-    batch_size = 2
+    batch_size = 1
     num_epoch = 25
-    small_set = False
+    small_set = True 
 
 
     learning_rate = 0.01
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # dummy data is used to test speed without IO
     dummy_data = False
 
-    contexts = mu.gpu(2)
+    contexts = mu.gpu(1)
 
     def sym_gen(seq_len):
         return lstm_unroll(num_lstm_layer, seq_len, num_hidden=num_hidden, num_label=1)
