@@ -5,7 +5,7 @@ from mxnet.ndarray import array
 
 
 class RIter(DataIter):
-    def __init__(self, data, init_status, label=None, batch_size=1, last_batch_handle='pad', num_hidden=250):
+    def __init__(self, data, init_status, label=None, batch_size=1, last_batch_handle='pad'):
         """data and label should be T*N*C*H*W"""
         super(RIter, self).__init__()
 
@@ -14,7 +14,6 @@ class RIter(DataIter):
 
         self.data_list = [x[1] for x in self.data] + [x[1] for x in self.label]
         self.num_source = len(self.data_list)
-        self.num_hidden = num_hidden
 
         # batching
         if last_batch_handle == 'discard':
@@ -40,12 +39,13 @@ class RIter(DataIter):
     def provide_data(self):
         """The name and shape of data provided by this iterator"""
         lst = [(k, tuple([self.batch_size] + list(v.shape[1:]))) for k, v in self.data]
-        return lst + self.init_status
+        label_shape = [(k, tuple([self.batch_size] + list(v.shape[1:]))) for k, v in self.label]
+        return lst + self.init_status + label_shape
 
     @property
     def provide_label(self):
         """The name and shape of label provided by this iterator"""
-        return [(k, tuple([self.batch_size] + list(v.shape[1:]))) for k, v in self.label]
+        return []
 
 
     def hard_reset(self):

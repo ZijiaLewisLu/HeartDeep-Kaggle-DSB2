@@ -5,6 +5,8 @@ import logging
 import mxnet as mx
 import numpy as np
 import mxnet.ndarray as nd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 import pickle as pk

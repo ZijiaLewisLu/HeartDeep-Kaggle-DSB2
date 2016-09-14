@@ -62,7 +62,7 @@ pm= {
             },
             'c10':{
                 'fsize' : (7,7),
-                'fnum'  : 8,
+                'fnum'  : 1,
                 'pad'   : (0,0),
                 'stride': (1,1)
             },
@@ -166,12 +166,11 @@ conv10 = mx.sym.Convolution(name = 'conv10', data = relu9, kernel = (7,7), num_f
 bn10 = mx.sym.BatchNorm(data = conv10)
 
 reshape1 = mx.sym.Reshape(data = bn10, target_shape = (0, 1*256*256))
-full1 = mx.sym.FullyConnected(data = reshape1, name = 'full1', num_hidden = 100)
+full1 = mx.sym.FullyConnected(data = reshape1, name = 'full1', num_hidden = 1000)
 full2 = mx.sym.FullyConnected(data = full1, name = 'full2', num_hidden = 1*256*256)
 reshape2 = mx.sym.Reshape(data = full2, target_shape = (0,1,256,256))
 
-out = mx.sym.Activation(data = reshape2, act_type = 'sigmoid') 
+net = mx.sym.LogisticRegressionOutput(data=reshape2, name = 'softmax')
 
-# net = mx.sym.Custom(data = out, name = 'softmax', op_type = 'iou')
 
 

@@ -5,6 +5,8 @@ import logging
 import mxnet as mx
 import numpy as np
 import mxnet.ndarray as nd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 import pickle as pk
@@ -16,6 +18,7 @@ import CNN
 import sys
 from my_utils import *
 
+from rnn_metric import rnnM
 
 class Solver():
 
@@ -45,7 +48,7 @@ class Solver():
         # self.save_pred = k.pop('save_pred', False)
         self.save_best = self.sks.pop('save_best', True)
         self.block_bn = self.sks.pop('block_bn', False)
-        self.is_rnn = self.sks.pop('is_rnn', False)
+        self.is_rnn = self.sks.pop('is_rnn', True)
         self.lgr = self.sks.pop('logger', None)
         self.keep_gamma = self.sks.pop('keep_gamma', True)
 
@@ -111,11 +114,6 @@ class Solver():
             save_k['ctx'] = ctx.__str__()
             save_k.pop('initializer', None)
             save_k.pop('logger', None)
-
-            if self.is_rnn:
-                save_k['marks'] = save_k['marks'].__str__()
-                if 'e_marks' in save_k:
-                    save_k['e_marks'] = save_k['e_marks'].__str__()
 
             json.dump(s, f, indent=4, sort_keys=True)
             json.dump(save_k, f, indent=4, sort_keys=True)
@@ -201,56 +199,56 @@ class Solver():
 
 
 
-        for i, n in enumerate(self.param_name):
-            ps = params[3]['executor_manager'].param_arrays[i]
-            gs = params[3]['executor_manager'].grad_arrays[i]
+        #for i, n in enumerate(self.param_name):
+        #    ps = params[3]['executor_manager'].param_arrays[i]
+        #    gs = params[3]['executor_manager'].grad_arrays[i]
 
-            psum = None
-            gsum = None
+        #    psum = None
+        #    gsum = None
 
-            # for the same param on different gpu
-            # operation for param
-            for j, p in enumerate(ps):
-                # if necessary, fix beta in batch norm
-                if 'beta' in n and self.block_bn and not self.is_rnn:
-                    params[3]['executor_manager'].param_arrays[i][j][:] = 0 * p
-                    mean = p.asnumpy().mean()
-                    if mean >= 5 or mean <= -5:
-                        self.lgr.warning('%n is NOT right =>%f', n, mean)
+        #    # for the same param on different gpu
+        #    # operation for param
+        #    for j, p in enumerate(ps):
+        #        # if necessary, fix beta in batch norm
+        #        if 'beta' in n and self.block_bn and not self.is_rnn:
+        #            params[3]['executor_manager'].param_arrays[i][j][:] = 0 * p
+        #            mean = p.asnumpy().mean()
+        #            if mean >= 5 or mean <= -5:
+        #                self.lgr.warning('%n is NOT right =>%f', n, mean)
+        #
+        #        if 'gamma' in n and self.keep_gamma and 'wd' in self.origin_k and not self.is_rnn:
+        #            wd = self.origin_k['wd']
+        #            lr = self.origin_k['learning_rate']
+        #            g = params[3]['executor_manager'].grad_arrays[i][j]
+        #
+        #            old_p_decay = p + lr * g
+        #            old_p = old_p_decay / (1 - lr * wd)
+        #            params[3]['executor_manager'].param_arrays[
+        #                i][j][:] = (old_p - lr * g) / p
 
-                if 'gamma' in n and self.keep_gamma and 'wd' in self.origin_k and not self.is_rnn:
-                    wd = self.origin_k['wd']
-                    lr = self.origin_k['learning_rate']
-                    g = params[3]['executor_manager'].grad_arrays[i][j]
+        #        if psum is None:
+        #            psum = p.asnumpy()
+        #        else:
+        #            psum += p.asnumpy()
 
-                    old_p_decay = p + lr * g
-                    old_p = old_p_decay / (1 - lr * wd)
-                    params[3]['executor_manager'].param_arrays[
-                        i][j][:] = (old_p - lr * g) / p
+        #    # print params' means
+        #    self.lgr.debug('[B%d %s]> %f', self.nbatch, n, psum.mean())
 
-                if psum is None:
-                    psum = p.asnumpy()
-                else:
-                    psum += p.asnumpy()
+        #    # save param
+        #    if n not in self.param_grad.keys():
+        #        self.param_grad[n] = [[psum.mean()], []]
+        #    else:
+        #        self.param_grad[n][0].append(psum.mean())
 
-            # print params' means
-            # self.lgr.debug('[B%d %s]> %f', self.nbatch, n, psum.mean())
-
-            # save param
-            if n not in self.param_grad.keys():
-                self.param_grad[n] = [[psum.mean()], []]
-            else:
-                self.param_grad[n][0].append(psum.mean())
-
-            # operation for grad
-            for g in gs:
-                if gsum is None:
-                    gsum = g.asnumpy()
-                else:
-                    gsum += g.asnumpy()
+        #    # operation for grad
+        #    for g in gs:
+        #        if gsum is None:
+        #            gsum = g.asnumpy()
+        #        else:
+        #            gsum += g.asnumpy()
 
             # save grad
-            self.param_grad[n][1].append(gsum.mean())
+        #    self.param_grad[n][1].append(gsum.mean())
 
     def eval_batch(self, params):
         local = params[3]
@@ -326,7 +324,7 @@ class Solver():
         for k in sorted(self.acc_hist.keys()):
             average = np.mean(self.acc_hist[k])
             l.append(average)
-
+        
         plt.plot(l, marker='o')
         path = os.path.join(self.path, 'acc_his-all.png')
         plt.savefig(path)
@@ -334,45 +332,21 @@ class Solver():
 
     def _init_model(self):
 
-        if self.is_rnn:
-            from RNN import rnn_feed
-
-            if self.sks.pop('load', False):
-                self.lgr.info('Load from Old RNN')
-                perfix = self.sks['load_perfix']
-                epoch = self.sks['load_epoch']
-                self.model = rnn_feed.Feed.load(perfix, epoch, **self.kwargs)
-                self.model.begin_epoch = 0
-
-            elif self.sks.pop('load_from_cnn', False):
-                self.lgr.info('Load from Old CNN')
-                perfix = self.sks['load_perfix']
-                epoch = self.sks['load_epoch']
-                shape = dict(self.train_data.provide_data +
-                             self.train_data.provide_label)
-                self.model = rnn_feed.Feed.load_from_cnn(
-                    perfix, epoch, self.net, shape, **self.kwargs)
-                self.model.begin_epoch = 0
-
-            else:
-                self.model = rnn_feed.Feed(self.net, **self.kwargs)
-
+        if self.sks.pop('load', False):
+            self.lgr.info('Load from Old')
+            perfix = self.sks['load_perfix']
+            epoch = self.sks['load_epoch']
+            self.model = mx.model.FeedForward.load(
+                perfix, epoch, **self.kwargs)
+            self.model.begin_epoch = 0
         else:
-            if self.sks.pop('load', False):
-                self.lgr.info('Load from Old CNN')
-                perfix = self.sks['load_perfix']
-                epoch = self.sks['load_epoch']
-                self.model = mx.model.FeedForward.load(
-                    perfix, epoch, **self.kwargs)
-                self.model.begin_epoch = 0
-            else:
-                self.model = mx.model.FeedForward(self.net, **self.kwargs)
+            self.model = mx.model.FeedForward(self.net, **self.kwargs)
 
     def train(self):
-
+        
         kwords = {
             'kvstore': 'local',
-            'eval_metric': self.eval,
+            'eval_metric': self.eval if not self.is_rnn else rnnM('eval'),
             'epoch_end_callback': self.epoch,
             'batch_end_callback': self.batch,
             #'eval_batch_end_callback': self.eval_batch,
@@ -382,25 +356,19 @@ class Solver():
             if term in self.kwargs.keys():
                 kwords[term] = self.kwargs.pop(term)
 
-        if self.is_rnn:
-            kwords['e_marks'] = self.kwargs.pop('e_marks', None)
-            marks = self.kwargs.pop('marks')
-            from RNN import rnn_metric
-            kwords['eval_metric'] = rnn_metric.RnnM(self.eval)
-            kwords['time_step_callback'] = self.time_step
-
         # prepare and train
         self._init_model()
 
         if self.is_rnn:
-            self.model.fit(self.train_data, marks, logger=self.lgr, **kwords)
+            self.model.fit(self.train_data, logger=self.lgr, **kwords)
         else:
             self.model.fit(self.train_data, logger=self.lgr, **kwords)
 
-        self.all_to_png()
-        self.plot_process()
         if self.save_best:
             self.save_best_model()
+        self.all_to_png()
+        # self.plot_process()
+        
 
     def predict(self):
         if 'eval_data' in self.origin_k.keys():
@@ -423,6 +391,10 @@ class Solver():
 
         out = self.model.predict(X, return_data=True)
         out = list(out)
+        
+       
+        self.predict_outputs = out
+        
         if self.is_rnn:
             self.lgr.debug('Prediction Done, reshape rnn outputs')
 
