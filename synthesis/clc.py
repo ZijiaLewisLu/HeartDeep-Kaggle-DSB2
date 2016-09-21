@@ -43,7 +43,7 @@ def train(param=PARAMS, sv=SOLVE, small=False):
 
 if __name__ == '__main__':
     PARAMS['num_epoch'] = 20
-    PARAMS['learning_rate'] = 0.01
+    PARAMS['learning_rate'] = 0.1
     PARAMS['ctx'] = mu.gpu(1)
     
     # SOLVE['load'] = False
